@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" />
+<style>
+  :root{
+    --paper:oklch(0.985 0.006 83); --surface:oklch(0.998 0.003 83); --surface-2:oklch(0.955 0.008 83);
+    --line:oklch(0.912 0.010 83); --line-strong:oklch(0.845 0.013 83);
+    --ink:oklch(0.290 0.014 70); --muted:oklch(0.520 0.012 70); --faint:oklch(0.660 0.010 70);
+    --accent:oklch(0.68 0.10 255); --tint:oklch(0.955 0.03 255); --ink-a:oklch(0.50 0.11 255);
+    --terra:oklch(0.69 0.10 45); --sage:oklch(0.68 0.10 152); --plum:oklch(0.66 0.11 340);
+    --ok:oklch(0.68 0.10 152); --ok-tint:oklch(0.955 0.03 152); --ok-ink:oklch(0.50 0.11 152);
+    --warn:oklch(0.75 0.11 78); --warn-tint:oklch(0.955 0.03 78); --warn-ink:oklch(0.52 0.10 78);
+    --bad:oklch(0.62 0.15 26); --bad-tint:oklch(0.955 0.03 26); --bad-ink:oklch(0.52 0.14 26);
+    --shadow:0 1px 2px oklch(0.4 0.02 70/.05), 0 4px 12px oklch(0.4 0.02 70/.06);
+    --shadow-lg:0 10px 34px oklch(0.4 0.02 70/.13);
+    --r:12px; --r-md:14px; --r-lg:18px;
+  }
+  [data-theme="dark"]{
+    --paper:oklch(0.205 0.008 75); --surface:oklch(0.248 0.010 75); --surface-2:oklch(0.292 0.011 75);
+    --line:oklch(0.335 0.012 75); --line-strong:oklch(0.410 0.014 75);
+    --ink:oklch(0.935 0.008 83); --muted:oklch(0.705 0.011 80); --faint:oklch(0.560 0.010 80);
+    --tint:oklch(0.34 0.05 255); --ink-a:oklch(0.83 0.09 255);
+    --ok-tint:oklch(0.34 0.05 152); --ok-ink:oklch(0.83 0.09 152);
+    --warn-tint:oklch(0.34 0.05 78); --warn-ink:oklch(0.83 0.09 78);
+    --shadow:0 1px 2px oklch(0 0 0/.3), 0 6px 16px oklch(0 0 0/.35);
+    --shadow-lg:0 14px 40px oklch(0 0 0/.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:oklch(0.93 0.008 83);font-family:'Source Sans 3',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .mi{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased}
+  .mif{font-variation-settings:'FILL' 1}
+  input,textarea{font-family:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line-strong);border-radius:12px;outline:none;width:100%}
+  input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--tint)}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  @keyframes riseIn{from{transform:translateY(11px)}to{transform:none}}
+  @keyframes tileIn{from{transform:translateY(12px) scale(.985)}to{transform:none}}
+  @keyframes ringPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  @keyframes flame{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.16)}}
+  @keyframes growBar{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
+  @keyframes confettiFall{0%{transform:translateY(-14px) rotate(0)}100%{transform:translateY(240px) rotate(var(--cr));opacity:0}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:20px 20px 40px;display:flex;flex-direction:column;align-items:center;gap:16px">
+
+  <div style="width:100%;max-width:1000px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center"><span class="mi" style="font-size:19px">quiz</span></span><span style="font-weight:700;font-size:16px">Quizcraft <span style="color:var(--muted);font-weight:500;font-size:13px">· live prototype</span></span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;color:var(--muted);font-weight:500"><span class="mi mif" style="font-size:16px;color:var(--accent)">{{ stepIcon }}</span>{{ stepHint }}</span>
+      <button onClick="{{ restart }}" style="display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:10px;background:var(--surface);border:1px solid var(--line-strong);color:var(--ink);font-weight:600;font-size:12.5px"><span class="mi" style="font-size:16px">restart_alt</span>Restart</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;width:100%">
+
+    <!-- =================== BIG SCREEN =================== -->
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;gap:8px;padding-left:4px"><span class="mi" style="font-size:18px;color:var(--muted)">cast</span><span style="font:600 12px 'IBM Plex Mono';letter-spacing:.04em;color:var(--muted)">TEACHER · BIG SCREEN</span></div>
+      <div style="width:640px;max-width:92vw">
+
+        <!-- BIG setup (light) -->
+        <sc-if value="{{ p_setup }}" hint-placeholder-val="{{ true }}">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center"><span class="mi" style="font-size:18px">quiz</span></span><span style="font-weight:700;font-size:15px">New quiz</span></div><span style="font:600 11px 'IBM Plex Mono';color:var(--muted)">STEP 1 / 3</span></div>
+            <div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+              <div><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">Quiz title</div><input value="{{ title }}" onInput="{{ onTitle }}" style="height:46px;padding:0 14px;font-size:16px;font-weight:500" /></div>
+              <div><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">Question types students can write</div>
+                <div style="display:flex;flex-wrap:wrap;gap:10px">
+                  <span style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:var(--tint);color:var(--ink-a);font-weight:600;font-size:13.5px"><span class="mi mif" style="font-size:17px">check_circle</span>True / False</span>
+                  <span style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:var(--tint);color:var(--ink-a);font-weight:600;font-size:13.5px"><span class="mi mif" style="font-size:17px">check_circle</span>Multiple choice</span>
+                  <span style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:var(--tint);color:var(--ink-a);font-weight:600;font-size:13.5px"><span class="mi mif" style="font-size:17px">check_circle</span>Short answer</span>
+                  <span style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:var(--tint);color:var(--ink-a);font-weight:600;font-size:13.5px"><span class="mi mif" style="font-size:17px">check_circle</span>Guess the number</span>
+                </div>
+              </div>
+              <button onClick="{{ createQuiz }}" style="height:50px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;box-shadow:var(--shadow)">Create &amp; open lobby<span class="mi" style="font-size:20px">arrow_forward</span></button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BIG lobby (dark) -->
+        <sc-if value="{{ big_lobby }}">
+          <div data-theme="dark" style="background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;color:var(--ink);animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center"><span class="mi" style="font-size:17px">quiz</span></span><span style="font-weight:700;font-size:15px">{{ title }}</span></div><span style="display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:var(--ok-tint);color:var(--ok-ink);font:600 11px 'IBM Plex Mono';text-transform:uppercase"><span style="width:7px;height:7px;border-radius:50%;background:var(--ok)"></span>Lobby open</span></div>
+            <div style="display:flex;gap:26px;padding:26px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex:none">
+                <div style="font-size:12px;color:var(--muted)">Join at <b style="color:var(--ink)">quiz.schaffner.xyz</b></div>
+                <div style="font:600 50px/1 'IBM Plex Mono';letter-spacing:.14em;color:var(--ink-a)">7421</div>
+                <div style="width:100px;height:100px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--faint)"><span class="mi" style="font-size:62px">qr_code_2</span></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:12px;min-height:160px">
+                <div style="font:600 12px 'IBM Plex Mono';color:var(--muted)">{{ joinedCount }} JOINED · {{ wrote }} WROTE THEIR QUESTION</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ joinedAvatars }}" as="a" hint-placeholder-count="4">
+                    <span style="width:36px;height:36px;border-radius:50%;background:var(--tint);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:18px;animation:pop .3s ease-out">{{ a.e }}</span>
+                  </sc-for>
+                </div>
+                <div style="flex:1"></div>
+                <sc-if value="{{ p_submitted }}">
+                  <button onClick="{{ openReview }}" style="align-self:flex-end;height:44px;padding:0 20px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px">Review questions<span class="mi" style="font-size:19px">arrow_forward</span></button>
+                </sc-if>
+                <sc-if value="{{ lobbyWaiting }}">
+                  <div style="align-self:flex-end;font-size:12.5px;color:var(--muted);font-style:italic">Students are writing their questions…</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BIG review (light) -->
+        <sc-if value="{{ p_review }}">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center"><span class="mi" style="font-size:18px">quiz</span></span><span style="font-weight:700;font-size:15px">Review questions</span></div><div style="display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:4px;gap:3px"><span style="padding:6px 12px;border-radius:8px;background:var(--surface);box-shadow:var(--shadow);color:var(--ink-a);font-weight:600;font-size:12.5px">Pending 4</span><span style="padding:6px 12px;border-radius:8px;color:var(--muted);font-weight:600;font-size:12.5px">Approved 0</span></div></div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper)">
+                  <span style="width:36px;height:36px;border-radius:50%;background:var(--tint);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:18px;flex:none">{{ r.avatar }}</span>
+                  <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="padding:3px 8px;border-radius:999px;background:{{ r.tintBg }};color:{{ r.tintInk }};font:600 10px 'IBM Plex Mono'">{{ r.typeLabel }}</span><span style="font-size:12px;color:var(--muted)">{{ r.author }}</span></div><div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.text }}</div></div>
+                  <div style="display:flex;gap:7px;flex:none"><span style="display:flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:9px;background:var(--accent);color:#fff;font-weight:600;font-size:12px"><span class="mi" style="font-size:15px">check</span>Approve</span><span style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line-strong);display:grid;place-items:center;color:var(--muted)"><span class="mi" style="font-size:17px">close</span></span></div>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line)"><span style="font:600 12px 'IBM Plex Mono';color:var(--muted)">4 QUESTIONS · READY</span><button onClick="{{ startQuiz }}" style="height:44px;padding:0 20px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;box-shadow:var(--shadow)"><span class="mi mif" style="font-size:20px">play_arrow</span>Start quiz</button></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BIG play active (dark) -->
+        <sc-if value="{{ pl_active }}">
+          <div data-theme="dark" style="background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;color:var(--ink);animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
+              <span style="padding:6px 12px;border-radius:999px;background:var(--surface-2);font:600 12px 'IBM Plex Mono'">Q {{ qNum }} / {{ qTotal }}</span>
+              <div style="display:flex;align-items:center;gap:14px">
+                <span style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:12.5px"><span class="mi" style="font-size:16px">edit</span>by {{ qAvatar }} {{ qAuthor }}</span>
+                <span style="width:58px;height:58px;border-radius:50%;background:{{ ringStyle }};display:grid;place-items:center;animation:{{ ringAnim }}"><span style="width:44px;height:44px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font:600 18px 'IBM Plex Mono'">{{ timeLeft }}</span></span>
+              </div>
+            </div>
+            <div style="text-align:center;padding:12px 40px 24px"><div style="font:700 28px/1.25 'Source Sans 3';letter-spacing:-.02em">{{ qText }}</div></div>
+            <sc-if value="{{ ans_choice }}">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 24px">
+                <sc-for list="{{ qOptions }}" as="opt" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px;height:62px;border-radius:var(--r-md);background:{{ opt.color }};color:#fff;padding:0 20px;animation:tileIn .35s ease-out both;animation-delay:{{ opt.delay }}"><span class="mi mif" style="font-size:22px">{{ opt.shape }}</span><span style="font-weight:600;font-size:17px">{{ opt.label }}</span></div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ ans_guess }}">
+              <div style="margin:0 24px;padding:22px;border-radius:var(--r-md);background:var(--surface-2);display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:16px"><span class="mi mif" style="font-size:24px;color:var(--plum)">tag</span>Type your best guess on your phone</div>
+            </sc-if>
+            <div style="display:flex;align-items:center;gap:14px;padding:22px 24px 24px"><span style="display:flex;align-items:center;gap:7px;font:600 13px 'IBM Plex Mono';color:var(--muted)"><span class="mi mif" style="font-size:18px;color:var(--accent)">group</span>{{ answered }} / {{ expected }} answered</span><div style="flex:1;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden"><div style="width:{{ ansPct }}%;height:100%;background:var(--accent);transition:width .4s"></div></div></div>
+          </div>
+        </sc-if>
+
+        <!-- BIG reveal (dark) -->
+        <sc-if value="{{ pl_reveal }}">
+          <div data-theme="dark" style="background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;color:var(--ink);animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px"><span style="font:600 12px 'IBM Plex Mono';color:var(--muted)">Q {{ qNum }} / {{ qTotal }} · RESULTS</span><span style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--ok);color:#fff;font-weight:600;font-size:13px"><span class="mi mif" style="font-size:17px">check_circle</span>{{ correctText }}</span></div>
+            <sc-if value="{{ rev_choice }}">
+              <div style="padding:4px 22px 18px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ dist }}" as="d" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px"><span class="mi mif" style="font-size:20px;color:{{ d.color }}">{{ d.shape }}</span><div style="width:{{ d.barW }};min-width:44px;height:32px;border-radius:8px;background:{{ d.barBg }};display:flex;align-items:center;padding:0 12px;color:{{ d.barInk }};font:600 12px 'IBM Plex Mono';transition:width .5s">{{ d.countLabel }}</div></div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ rev_number }}">
+              <div style="padding:8px 22px 20px;text-align:center"><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Correct answer</div><div style="font:600 40px 'IBM Plex Mono';color:var(--ink-a)">{{ correctText }}</div></div>
+            </sc-if>
+            <div style="display:flex;justify-content:flex-end;padding:0 22px 22px"><button onClick="{{ showScores }}" style="height:42px;padding:0 18px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px">Show scores<span class="mi" style="font-size:19px">arrow_forward</span></button></div>
+          </div>
+        </sc-if>
+
+        <!-- BIG scores (dark) -->
+        <sc-if value="{{ pl_scores }}">
+          <div data-theme="dark" style="background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;color:var(--ink);animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px"><span style="font:700 18px 'Source Sans 3';letter-spacing:-.01em">Leaderboard</span><span style="padding:5px 11px;border-radius:999px;background:var(--surface-2);color:var(--muted);font:600 11px 'IBM Plex Mono'">AFTER Q{{ qNum }}</span></div>
+            <div style="padding:2px 20px 20px;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ board }}" as="r" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--r-md);background:{{ r.rowBg }};border:1px solid {{ r.rowBorder }};animation:riseIn .4s ease-out both;animation-delay:{{ r.delay }}">
+                  <span style="font:700 19px 'IBM Plex Mono';color:{{ r.rankColor }};width:22px">{{ r.rank }}</span>
+                  <span style="width:34px;height:34px;border-radius:50%;background:var(--tint);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:17px">{{ r.avatar }}</span>
+                  <span style="flex:1;font-weight:600;font-size:15px">{{ r.name }}</span>
+                  <span style="font:600 15px 'IBM Plex Mono'">{{ r.score }}</span>
+                  <span class="mi" style="font-size:18px;color:{{ r.deltaColor }}">{{ r.deltaIcon }}</span>
+                </div>
+              </sc-for>
+              <button onClick="{{ nextQuestion }}" style="height:46px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;margin-top:4px">{{ nextLabel }}<span class="mi" style="font-size:19px">arrow_forward</span></button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BIG podium (dark) -->
+        <sc-if value="{{ p_podium }}">
+          <div data-theme="dark" style="background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;color:var(--ink);animation:riseIn .45s cubic-bezier(.2,.7,.2,1) both">
+            <div style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:18px;position:relative">
+              <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:var(--r-lg)"><sc-for list="{{ confetti }}" as="c" hint-placeholder-count="0"><span style="position:absolute;top:-10px;left:{{ c.left }};width:{{ c.size }};height:{{ c.size }};background:{{ c.color }};border-radius:2px;--cr:{{ c.cr }};animation:confettiFall {{ c.dur }} linear {{ c.delay }} infinite"></span></sc-for></div>
+              <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-size:34px">🏆</span><div style="font:700 21px 'Source Sans 3';letter-spacing:-.01em">Final results</div></div>
+              <div style="position:relative;z-index:1;display:flex;align-items:flex-end;gap:14px;width:100%;max-width:440px;justify-content:center">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1"><span style="width:44px;height:44px;border-radius:50%;background:var(--tint);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:22px">{{ podium.second.avatar }}</span><div style="width:100%;height:82px;border-radius:10px 10px 0 0;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:2px;transform-origin:bottom;animation:growBar .5s ease-out .12s both"><span style="font-weight:700;font-size:15px">2nd</span><span style="font:600 12px 'IBM Plex Mono';color:var(--muted)">{{ podium.second.score }}</span><span style="font-size:11px;color:var(--muted)">{{ podium.second.name }}</span></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1.15"><span style="font-size:18px">👑</span><span style="width:52px;height:52px;border-radius:50%;background:var(--tint);border:2px solid var(--accent);display:grid;place-items:center;font-size:26px">{{ podium.first.avatar }}</span><div style="width:100%;height:118px;border-radius:10px 10px 0 0;background:var(--accent);color:#fff;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:2px;transform-origin:bottom;animation:growBar .55s ease-out both"><span style="font-weight:700;font-size:17px">1st</span><span style="font:600 13px 'IBM Plex Mono'">{{ podium.first.score }}</span><span style="font-size:12px;opacity:.9">{{ podium.first.name }}</span></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1"><span style="width:44px;height:44px;border-radius:50%;background:var(--tint);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:22px">{{ podium.third.avatar }}</span><div style="width:100%;height:60px;border-radius:10px 10px 0 0;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:2px;transform-origin:bottom;animation:growBar .5s ease-out .22s both"><span style="font-weight:700;font-size:15px">3rd</span><span style="font:600 12px 'IBM Plex Mono';color:var(--muted)">{{ podium.third.score }}</span><span style="font-size:11px;color:var(--muted)">{{ podium.third.name }}</span></div></div>
+              </div>
+              <button onClick="{{ restart }}" style="position:relative;z-index:1;height:46px;padding:0 22px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px"><span class="mi" style="font-size:19px">restart_alt</span>New quiz</button>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <!-- =================== PHONE =================== -->
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;gap:8px;padding-left:4px"><span class="mi" style="font-size:18px;color:var(--muted)">smartphone</span><span style="font:600 12px 'IBM Plex Mono';letter-spacing:.04em;color:var(--muted)">STUDENT · YOUR PHONE</span></div>
+      <div style="width:300px;background:var(--paper);border:1px solid var(--line-strong);border-radius:34px;padding:10px;box-shadow:var(--shadow-lg)">
+        <div style="border-radius:26px;overflow:hidden;background:{{ phoneBg }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px 3px;font:600 11px 'IBM Plex Mono';color:var(--ink)"><span>9:41</span><span style="display:flex;gap:5px;color:var(--muted)"><span class="mi" style="font-size:14px">wifi</span><span class="mi mif" style="font-size:15px">battery_full</span></span></div>
+          <div style="padding:18px 18px 22px;min-height:474px;display:flex;flex-direction:column">
+
+            <!-- phone waiting -->
+            <sc-if value="{{ p_setup }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center">
+                <span style="width:56px;height:56px;border-radius:16px;background:var(--surface-2);color:var(--faint);display:grid;place-items:center"><span class="mi" style="font-size:30px">hourglass_empty</span></span>
+                <div style="font-weight:600;font-size:15px;color:var(--muted)">Waiting for your teacher<br>to open the quiz…</div>
+              </div>
+            </sc-if>
+
+            <!-- phone join -->
+            <sc-if value="{{ p_lobby }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:15px;text-align:center;padding-top:12px">
+                <span style="width:50px;height:50px;border-radius:15px;background:var(--accent);color:#fff;display:grid;place-items:center"><span class="mi" style="font-size:28px">quiz</span></span>
+                <div style="font:700 21px 'Source Sans 3';letter-spacing:-.01em">Join a quiz</div>
+                <div style="font-size:13px;color:var(--muted)">Enter the code on the board</div>
+                <div style="display:flex;gap:8px;margin-top:2px"><span style="width:46px;height:54px;border:2px solid var(--accent);border-radius:12px;display:grid;place-items:center;font:600 25px 'IBM Plex Mono';color:var(--accent)">7</span><span style="width:46px;height:54px;border:2px solid var(--accent);border-radius:12px;display:grid;place-items:center;font:600 25px 'IBM Plex Mono';color:var(--accent)">4</span><span style="width:46px;height:54px;border:2px solid var(--accent);border-radius:12px;display:grid;place-items:center;font:600 25px 'IBM Plex Mono';color:var(--accent)">2</span><span style="width:46px;height:54px;border:2px solid var(--accent);border-radius:12px;display:grid;place-items:center;font:600 25px 'IBM Plex Mono';color:var(--accent)">1</span></div>
+                <div style="flex:1"></div>
+                <button onClick="{{ joinNow }}" style="width:100%;height:50px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;box-shadow:var(--shadow)">Join<span class="mi" style="font-size:20px">arrow_forward</span></button>
+              </div>
+            </sc-if>
+
+            <!-- phone avatar -->
+            <sc-if value="{{ p_avatar }}">
+              <div style="flex:1;display:flex;flex-direction:column;gap:14px">
+                <div style="text-align:center"><span style="padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);font:600 11px 'IBM Plex Mono'">CODE 7421</span><div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em;margin-top:8px">Make it yours</div></div>
+                <div style="font:600 11px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Pick an avatar</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+                  <sc-for list="{{ avList }}" as="a" hint-placeholder-count="8">
+                    <button onClick="{{ a.onPick }}" style="aspect-ratio:1;border-radius:50%;background:{{ a.bg }};outline:{{ a.ring }};outline-offset:2px;display:grid;place-items:center;font-size:23px">{{ a.emoji }}</button>
+                  </sc-for>
+                </div>
+                <div><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">Nickname</div><input value="{{ name }}" onInput="{{ onName }}" placeholder="e.g. Robincode" style="height:46px;padding:0 14px;font-size:15px;font-weight:500" /></div>
+                <div style="flex:1"></div>
+                <button onClick="{{ enterLobby }}" style="height:50px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;box-shadow:var(--shadow)">Enter lobby<span class="mi" style="font-size:20px">arrow_forward</span></button>
+              </div>
+            </sc-if>
+
+            <!-- phone write -->
+            <sc-if value="{{ p_write }}">
+              <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+                <div style="font:700 18px 'Source Sans 3';letter-spacing:-.01em">Write a question</div>
+                <div style="display:flex;gap:7px">
+                  <button onClick="{{ chooseMC }}" style="flex:1;padding:8px 0;border-radius:10px;background:{{ mcBg }};color:{{ mcInk }};border:1.5px solid {{ mcBorder }};font-weight:600;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="mi mif" style="font-size:18px">circle</span>Choice</button>
+                  <button onClick="{{ chooseTF }}" style="flex:1;padding:8px 0;border-radius:10px;background:{{ tfBg }};color:{{ tfInk }};border:1.5px solid {{ tfBorder }};font-weight:600;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="mi mif" style="font-size:18px">square</span>T / F</button>
+                  <button onClick="{{ chooseShort }}" style="flex:1;padding:8px 0;border-radius:10px;background:{{ shortBg }};color:{{ shortInk }};border:1.5px solid {{ shortBorder }};font-weight:600;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="mi mif" style="font-size:18px">short_text</span>Short</button>
+                  <button onClick="{{ chooseGuess }}" style="flex:1;padding:8px 0;border-radius:10px;background:{{ guessBg }};color:{{ guessInk }};border:1.5px solid {{ guessBorder }};font-weight:600;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="mi mif" style="font-size:18px">tag</span>Guess</button>
+                </div>
+                <textarea value="{{ uText }}" onInput="{{ onUText }}" rows="2" style="padding:10px 12px;font-size:14px;font-weight:500;resize:none" placeholder="Type your question…"></textarea>
+                <sc-if value="{{ ut_mc }}">
+                  <div style="display:flex;flex-direction:column;gap:7px">
+                    <sc-for list="{{ uOptRows }}" as="o" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:8px;height:40px;border:1.5px solid {{ o.border }};border-radius:11px;padding:0 10px;background:{{ o.bg }}"><span style="width:13px;height:13px;border-radius:3px;background:{{ o.color }};flex:none"></span><input value="{{ o.value }}" onInput="{{ o.onInput }}" style="border:none;box-shadow:none;background:none;height:36px;font-size:13.5px;padding:0" /><button onClick="{{ o.onPick }}" style="flex:none"><span class="mi {{ o.iconFill }}" style="font-size:20px;color:{{ o.iconColor }}">{{ o.icon }}</span></button></div>
+                    </sc-for>
+                    <div style="font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px"><span class="mi mif" style="font-size:14px;color:var(--accent)">check_circle</span>Tap the circle to mark the correct answer</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ut_tf }}">
+                  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--faint)">The statement is…</div><div style="display:flex;gap:8px"><button onClick="{{ setTFtrue }}" style="flex:1;height:44px;border-radius:11px;background:{{ tfTrueBg }};color:{{ tfTrueInk }};border:1.5px solid {{ tfTrueBorder }};font-weight:600;font-size:14px">True</button><button onClick="{{ setTFfalse }}" style="flex:1;height:44px;border-radius:11px;background:{{ tfFalseBg }};color:{{ tfFalseInk }};border:1.5px solid {{ tfFalseBorder }};font-weight:600;font-size:14px">False</button></div></div>
+                </sc-if>
+                <sc-if value="{{ ut_short }}">
+                  <div><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">Accepted answer</div><input value="{{ uShort }}" onInput="{{ onUShort }}" style="height:44px;padding:0 12px;font-size:14px" placeholder="e.g. Mitochondrion" /></div>
+                </sc-if>
+                <sc-if value="{{ ut_guess }}">
+                  <div><div style="font:600 11px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">Correct number</div><input value="{{ uNum }}" onInput="{{ onUNum }}" inputmode="numeric" style="height:48px;padding:0 14px;font:600 20px 'IBM Plex Mono'" placeholder="0" /></div>
+                </sc-if>
+                <div style="flex:1"></div>
+                <button onClick="{{ submitQ }}" style="height:48px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;box-shadow:var(--shadow)">Submit for review<span class="mi" style="font-size:20px">arrow_forward</span></button>
+              </div>
+            </sc-if>
+
+            <!-- phone submitted / waiting for start -->
+            <sc-if value="{{ phone_submitted }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center">
+                <span style="width:70px;height:70px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow-lg);animation:pop .4s ease-out"><span class="mi mif" style="font-size:40px">check</span></span>
+                <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">Question submitted!</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:210px">Waiting for {{ waitMsg }}</div>
+                <span style="padding:6px 12px;border-radius:999px;background:var(--surface-2);color:var(--muted);font:600 11px 'IBM Plex Mono'">YOU'LL PLAY WHEN IT STARTS</span>
+              </div>
+            </sc-if>
+
+            <!-- phone answer input -->
+            <sc-if value="{{ pa_input }}">
+              <div style="flex:1;display:flex;flex-direction:column;gap:13px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);font:600 11px 'IBM Plex Mono'">Q{{ qNum }} / {{ qTotal }}</span><span style="display:flex;align-items:center;gap:5px;font:600 15px 'IBM Plex Mono';color:var(--accent)"><span class="mi" style="font-size:18px">timer</span>{{ timeLeft }}s</span></div>
+                <sc-if value="{{ ans_choice }}">
+                  <div style="text-align:center;font-size:12.5px;color:var(--muted);font-weight:500">Read the board · tap your answer</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1">
+                    <sc-for list="{{ qOptions }}" as="opt" hint-placeholder-count="4">
+                      <button onClick="{{ opt.onAnswer }}" style-active="transform:scale(.94)" style="border:none;border-radius:var(--r-md);background:{{ opt.color }};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:88px;transition:transform .1s;animation:tileIn .3s ease-out both;animation-delay:{{ opt.delay }}"><span class="mi mif" style="font-size:34px">{{ opt.shape }}</span><span style="font-weight:600;font-size:12px">{{ opt.label }}</span></button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ans_guess }}">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:12px;justify-content:center">
+                    <div style="text-align:center;font-size:13px;color:var(--muted)">{{ qText }}</div>
+                    <input value="{{ guessInput }}" onInput="{{ onGuess }}" inputmode="numeric" placeholder="0" style="height:64px;text-align:center;font:600 30px 'IBM Plex Mono';color:var(--ink)" />
+                    <div style="text-align:center;font-size:12px;color:var(--faint)">{{ qUnit }}</div>
+                    <button onClick="{{ submitGuess }}" style="height:48px;border-radius:var(--r);background:var(--accent);color:#fff;font-weight:600;font-size:15px">Lock in guess</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ans_short }}">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:12px;justify-content:center">
+                    <div style="text-align:center;font-size:13px;color:var(--muted)">{{ qText }}</div>
+                    <input value="{{ guessInput }}" onInput="{{ onGuess }}" placeholder="Type your answer" style="height:52px;text-align:center;font-size:16px;font-weight:500" />
+                    <button onClick="{{ submitGuess }}" style="height:48px;border-radius:var(--r);background:var(--accent);color:#fff;font-weight:600;font-size:15px">Submit answer</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- phone answered, waiting -->
+            <sc-if value="{{ pa_waiting }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;text-align:center">
+                <span style="width:64px;height:64px;border-radius:50%;background:var(--tint);color:var(--ink-a);display:grid;place-items:center;animation:pop .4s ease-out"><span class="mi mif" style="font-size:34px">lock</span></span>
+                <div style="font:700 18px 'Source Sans 3';letter-spacing:-.01em">Locked in!</div>
+                <div style="font-size:13px;color:var(--muted)">Waiting for everyone else…</div>
+                <span style="padding:6px 12px;border-radius:999px;background:var(--surface-2);color:var(--muted);font:600 11px 'IBM Plex Mono'">{{ answered }} / {{ expected }} ANSWERED</span>
+              </div>
+            </sc-if>
+
+            <!-- phone LOCKED (own question) -->
+            <sc-if value="{{ pa_locked }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;text-align:center">
+                <span style="width:74px;height:74px;border-radius:50%;background:var(--tint);color:var(--ink-a);display:grid;place-items:center;font-size:36px">👀</span>
+                <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">This one's yours!</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:215px">You wrote this question, so you're sitting it out — no points this round.</div>
+                <span style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line)"><span class="mi mif" style="font-size:16px;color:var(--accent)">group</span><span style="font:600 12.5px 'IBM Plex Mono'">{{ answered }} / {{ expected }} answering…</span></span>
+              </div>
+            </sc-if>
+
+            <!-- phone result -->
+            <sc-if value="{{ pl_reveal }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center">
+                <sc-if value="{{ rev_locked }}">
+                  <span style="width:64px;height:64px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;font-size:32px">👀</span>
+                  <div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em;color:var(--muted)">You sat this one out</div>
+                  <div style="font-size:13px;color:var(--faint)">It was your question — no points, but nice writing!</div>
+                </sc-if>
+                <sc-if value="{{ rev_correct }}">
+                  <span style="width:68px;height:68px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow-lg);animation:pop .5s ease-out"><span class="mi mif" style="font-size:38px">check</span></span>
+                  <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em;color:var(--ok-ink)">Correct!</div>
+                  <div style="font:600 44px/1 'IBM Plex Mono';color:var(--ink)">+{{ r_points }}</div>
+                  <div style="display:flex;gap:8px"><span style="padding:6px 11px;border-radius:999px;background:var(--warn-tint);color:var(--warn-ink);font:600 12px 'Source Sans 3'"><span style="display:inline-block;animation:flame 1s ease-in-out infinite">🔥</span> {{ r_streak }} streak</span><span style="padding:6px 11px;border-radius:999px;background:var(--tint);color:var(--ink-a);font:600 12px 'Source Sans 3'">{{ r_rankText }} place</span></div>
+                </sc-if>
+                <sc-if value="{{ rev_wrong }}">
+                  <span style="width:68px;height:68px;border-radius:50%;background:var(--bad);color:#fff;display:grid;place-items:center;animation:pop .5s ease-out"><span class="mi mif" style="font-size:38px">close</span></span>
+                  <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;color:var(--bad-ink)">Not this time</div>
+                  <div style="font-size:13px;color:var(--muted)">Answer: <b style="color:var(--ink)">{{ correctText }}</b></div>
+                  <div style="font-size:12.5px;color:var(--faint)">Streak reset · still {{ r_rankText }} place</div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- phone rank (scores) -->
+            <sc-if value="{{ pl_scores }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center">
+                <div style="font:600 11px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Your standing</div>
+                <div style="font:700 52px/1 'IBM Plex Mono';color:var(--ink-a)">{{ r_rankText }}</div>
+                <div style="font-size:14px;color:var(--muted)"><b style="color:var(--ink);font-family:'IBM Plex Mono'">{{ yourScore }}</b> points</div>
+                <div style="font-size:12.5px;color:var(--faint);display:flex;align-items:center;gap:5px"><span class="mi" style="font-size:16px">tv</span>Watch the board for the standings</div>
+              </div>
+            </sc-if>
+
+            <!-- phone gg -->
+            <sc-if value="{{ p_podium }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center">
+                <span style="font-size:44px">{{ ggEmoji }}</span>
+                <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em">You finished {{ r_rankText }}!</div>
+                <div style="font-size:14px;color:var(--muted)"><b style="color:var(--ink);font-family:'IBM Plex Mono'">{{ yourScore }}</b> points · {{ ggNote }}</div>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="font-size:12.5px;color:var(--muted);max-width:640px;text-align:center;line-height:1.5">Drive both roles: set up &amp; review on the big screen, join &amp; play on the phone. Classmates <b>Inkwell, NightOwl, Mothwing &amp; Bumble</b> join and answer on their own. When your question comes up, you're locked out.</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    phase:'setup', title:'Photosynthesis',
+    avatar:'🦊', name:'',
+    uType:'mc', uText:'Which planet is closest to the Sun?',
+    uOpts:['Mercury','Venus','Earth','Mars'], uCorrect:0,
+    uTF:true, uShort:'Mitochondrion', uNum:'8',
+    wrote:4,
+    qi:0, playStage:'active', duration:20, timeLeft:20,
+    answered:0, userAnswered:false, guessInput:'', round:[],
+    lastPoints:0, lastCorrect:false, streak:0, pointsDisplay:0,
+    scores:{You:0,Inkwell:0,NightOwl:0,Mothwing:0,Bumble:0}, prevRank:{}
+  };
+
+  componentWillUnmount(){ this.clearTimers(); }
+  clearTimers(){ if(this._tick){clearInterval(this._tick);this._tick=null;} if(this._count){clearInterval(this._count);this._count=null;} (this._bots||[]).forEach(t=>clearTimeout(t)); this._bots=[]; }
+
+  bots(){ return [['Inkwell','🐙'],['NightOwl','🦉'],['Mothwing','🦋'],['Bumble','🐝']]; }
+  typeLabel(t){ return {mc:'Multiple choice',tf:'True / False',short:'Short answer',guess:'Guess the number'}[t]||t; }
+
+  questions(){
+    const s=this.state;
+    return [
+      {type:'mc', author:'Inkwell', avatar:'🐙', text:'Which organelle carries out photosynthesis?', options:['Chloroplast','Mitochondrion','Ribosome','Nucleus'], correct:0},
+      {type:s.uType, author:'You', avatar:s.avatar, text:s.uText, options:s.uOpts, correct:s.uCorrect, tf:s.uTF, num:parseFloat(s.uNum)||0, answer:s.uShort, isUser:true},
+      {type:'tf', author:'NightOwl', avatar:'🦉', text:'Chlorophyll is what makes most plants look green.', tf:true},
+      {type:'guess', author:'Mothwing', avatar:'🦋', text:'How many bones are in an adult human body?', num:206, unit:'bones'}
+    ];
+  }
+  curQ(){ const qs=this.questions(); return qs[Math.min(this.state.qi,qs.length-1)]; }
+  expected(){ return 4; }
+
+  rankMap(scores){ const arr=Object.keys(scores).sort((a,b)=>scores[b]-scores[a]); const m={}; arr.forEach((n,i)=>m[n]=i+1); return m; }
+
+  startQuestion(){
+    this.clearTimers();
+    const prev=this.rankMap(this.state.scores);
+    this.setState({playStage:'active', timeLeft:this.state.duration, answered:0, userAnswered:false, guessInput:'', round:[], prevRank:prev, lastCorrect:false, lastPoints:0, pointsDisplay:0}, ()=>{
+      this._tick=setInterval(()=>this.tick(),1000);
+      this.scheduleBots();
+    });
+  }
+  tick(){
+    this.setState(s=>({timeLeft:Math.max(0,s.timeLeft-1)}), ()=>{
+      if(this.state.timeLeft<=0 && this.state.playStage==='active') this.reveal();
+    });
+  }
+  scheduleBots(){
+    const q=this.curQ();
+    const list=this.bots().filter(b=>b[0]!==q.author);
+    this._bots=[];
+    list.forEach(b=>{ this._bots.push(setTimeout(()=>this.botAnswer(b[0],q), 1600+Math.random()*8500)); });
+  }
+  otherIndex(c,n){ let i; do{ i=Math.floor(Math.random()*n); }while(i===c && n>1); return i; }
+  botAnswer(name,q){
+    if(this.state.playStage!=='active') return;
+    const good=Math.random()<0.68;
+    let choice=0;
+    if(q.type==='mc'){ choice=good?q.correct:this.otherIndex(q.correct,q.options.length); }
+    else if(q.type==='tf'){ choice=good?(q.tf?0:1):(q.tf?1:0); }
+    else { choice=good?0:1; }
+    const pts=good?700+Math.round(300*this.state.timeLeft/this.state.duration):0;
+    this.setState(s=>({
+      scores:{...s.scores,[name]:s.scores[name]+pts},
+      round:[...s.round,{player:name,choice,correct:good}],
+      answered:s.answered+1
+    }), ()=>this.checkAll());
+  }
+  checkAll(){ if(this.state.answered>=this.expected() && this.state.playStage==='active') this.reveal(); }
+
+  answerMC(i){ this.userAnswer('mc',i,i); }
+  answerTF(b){ this.userAnswer('tf', b?0:1, b?0:1); }
+  submitGuess(){
+    const q=this.curQ();
+    if(q.type==='guess'){ this.userAnswer('guess', parseFloat(this.state.guessInput), 0); }
+    else { this.userAnswer('short', (this.state.guessInput||'').trim().toLowerCase(), 0); }
+  }
+  userAnswer(kind,val,choice){
+    if(this.state.userAnswered||this.state.playStage!=='active') return;
+    const q=this.curQ(); let correct=false;
+    if(q.type==='mc') correct = val===q.correct;
+    else if(q.type==='tf') correct = (val===0)===q.tf;
+    else if(q.type==='guess'){ const d=Math.abs((val||0)-q.num); correct = d<=Math.max(1,q.num*0.05); }
+    else if(q.type==='short'){ correct = val && q.answer && val===String(q.answer).trim().toLowerCase(); }
+    const pts=correct?700+Math.round(300*this.state.timeLeft/this.state.duration):0;
+    this.setState(s=>({
+      userAnswered:true,
+      scores:{...s.scores,You:s.scores.You+pts},
+      round:[...s.round,{player:'You',choice:choice||0,correct}],
+      answered:s.answered+1,
+      streak: correct? s.streak+1:0,
+      lastPoints:pts, lastCorrect:!!correct
+    }), ()=>this.checkAll());
+  }
+  reveal(){
+    this.clearTimers();
+    this.setState({playStage:'reveal', pointsDisplay:0});
+    if(this.state.lastCorrect && !this.curQ().isUser){
+      const target=this.state.lastPoints, t0=Date.now(), dur=650;
+      this._count=setInterval(()=>{ const k=Math.min(1,(Date.now()-t0)/dur); this.setState({pointsDisplay:Math.round(target*(1-Math.pow(1-k,3)))}); if(k>=1){clearInterval(this._count);this._count=null;} },35);
+    }
+  }
+  nextQuestion(){
+    const qs=this.questions();
+    if(this.state.qi+1<qs.length){ this.setState(s=>({qi:s.qi+1}), ()=>this.startQuestion()); }
+    else { this.clearTimers(); this.setState({phase:'podium'}); }
+  }
+  restart(){
+    this.clearTimers();
+    this.setState({phase:'setup', qi:0, playStage:'active', timeLeft:20, answered:0, userAnswered:false, guessInput:'', round:[], streak:0, name:'', avatar:'🦊', wrote:4, lastPoints:0, lastCorrect:false, scores:{You:0,Inkwell:0,NightOwl:0,Mothwing:0,Bumble:0}, prevRank:{}});
+  }
+
+  renderVals(){
+    const s=this.state, q=this.curQ(), qs=this.questions();
+    const pal=[['var(--accent)','circle'],['var(--terra)','square'],['var(--sage)','change_history'],['var(--plum)','diamond']];
+    const phase=s.phase, pl=s.playStage;
+    const isUser=!!q.isUser;
+    const stepMap={setup:['edit_square','Teacher: create the quiz'],lobby:['login','You: join the quiz'],avatar:['face','You: pick avatar & name'],write:['quiz','You: write a question'],submitted:['hourglass_top','Teacher: review & start'],review:['fact_check','Teacher: approve & start'],play:['sports_esports','Live quiz in progress'],podium:['emoji_events','Game over']};
+    const step=stepMap[phase]||stepMap.play;
+
+    // options for choice questions
+    let qOptions=[];
+    if(q.type==='mc'){ qOptions=(q.options||[]).map((o,i)=>({label:o,color:pal[i][0],shape:pal[i][1],delay:(i*60)+'ms',onAnswer:()=>this.answerMC(i)})); }
+    else if(q.type==='tf'){ qOptions=[{label:'True',color:'var(--accent)',shape:'circle',delay:'0ms',onAnswer:()=>this.answerTF(true)},{label:'False',color:'var(--terra)',shape:'square',delay:'80ms',onAnswer:()=>this.answerTF(false)}]; }
+    const ans_choice=(q.type==='mc'||q.type==='tf');
+
+    // distribution
+    const exp=this.expected(); let dist=[]; let correctText='';
+    if(q.type==='mc'){ correctText=q.options[q.correct];
+      dist=q.options.map((o,i)=>{ const c=s.round.filter(r=>r.choice===i).length; const isC=i===q.correct; return {label:o,color:pal[i][0],shape:pal[i][1],countLabel:isC?(c+' · correct'):(''+c),barW:Math.round(100*c/Math.max(1,exp))+'%',barBg:isC?'var(--ok)':'var(--surface-2)',barInk:isC?'#fff':'var(--muted)'}; });
+    } else if(q.type==='tf'){ correctText=q.tf?'True':'False';
+      dist=[{lab:'True',idx:0,color:'var(--accent)',shape:'circle'},{lab:'False',idx:1,color:'var(--terra)',shape:'square'}].map(d=>{ const c=s.round.filter(r=>r.choice===d.idx).length; const isC=(d.idx===0)===q.tf; return {label:d.lab,color:d.color,shape:d.shape,countLabel:isC?(c+' · correct'):(''+c),barW:Math.round(100*c/Math.max(1,exp))+'%',barBg:isC?'var(--ok)':'var(--surface-2)',barInk:isC?'#fff':'var(--muted)'}; });
+    } else if(q.type==='guess'){ correctText=q.num+(q.unit?(' '+q.unit):''); }
+    else { correctText=q.answer||'—'; }
+
+    // standings
+    const names=Object.keys(s.scores);
+    const sorted=[...names].sort((a,b)=>s.scores[b]-s.scores[a]);
+    const avatarOf={You:s.avatar,Inkwell:'🐙',NightOwl:'🦉',Mothwing:'🦋',Bumble:'🐝'};
+    const board=sorted.map((n,i)=>{ const prev=s.prevRank[n]||(i+1); const dv=prev-(i+1); const you=n==='You';
+      return {rank:i+1,name:n,avatar:avatarOf[n],score:s.scores[n],delay:(i*70)+'ms',
+        rowBg: you?'var(--tint)':'var(--surface)', rowBorder: you?'var(--accent)':'var(--line)',
+        rankColor: i===0?'var(--ink-a)':'var(--muted)',
+        deltaIcon: dv>0?'arrow_upward':(dv<0?'arrow_downward':'remove'),
+        deltaColor: dv>0?'var(--ok)':(dv<0?'var(--bad)':'var(--faint)')}; });
+    const yourRank=sorted.indexOf('You')+1;
+    const ord=(n)=>{ const k=['th','st','nd','rd'],v=n%100; return n+(k[(v-20)%10]||k[v]||k[0]); };
+
+    // authoring option rows
+    const uOptRows=s.uOpts.map((v,i)=>({ value:v, color:pal[i][0],
+      bg: i===s.uCorrect?'var(--tint)':'var(--paper)', border: i===s.uCorrect?'var(--accent)':'var(--line-strong)',
+      icon: i===s.uCorrect?'check_circle':'radio_button_unchecked', iconFill: i===s.uCorrect?'mif':'', iconColor: i===s.uCorrect?'var(--accent)':'var(--faint)',
+      onInput:(e)=>{ const arr=[...this.state.uOpts]; arr[i]=e.target.value; this.setState({uOpts:arr}); },
+      onPick:()=>this.setState({uCorrect:i}) }));
+
+    // type picker styling
+    const tstyle=(t)=>({ bg: s.uType===t?'var(--tint)':'var(--surface)', ink: s.uType===t?'var(--ink-a)':'var(--muted)', border: s.uType===t?'var(--accent)':'var(--line)' });
+    const tm=tstyle('mc'),tt=tstyle('tf'),tsh=tstyle('short'),tg=tstyle('guess');
+    const tfSel=(v)=>({ bg: s.uTF===v?'var(--tint)':'var(--surface)', ink: s.uTF===v?'var(--ink-a)':'var(--muted)', border: s.uTF===v?'var(--accent)':'var(--line-strong)' });
+    const tfT=tfSel(true), tfF=tfSel(false);
+
+    // avatars
+    const avList=['🦊','🦉','🐙','🦋','🐬','🦄','🐝','🐧'].map(a=>({ emoji:a, bg: a===s.avatar?'var(--tint)':'var(--surface-2)', ring: a===s.avatar?'2.5px solid var(--accent)':'2.5px solid transparent', onPick:()=>this.setState({avatar:a}) }));
+    const nameSet=!!s.name.trim();
+    const joinedAvatars=[{e:'🐙'},{e:'🦉'},{e:'🦋'},{e:'🐝'}].concat(nameSet?[{e:s.avatar}]:[]);
+
+    // review rows
+    const rTint={mc:['var(--tint)','var(--ink-a)'],tf:['oklch(0.955 0.03 45)','oklch(0.50 0.11 45)'],short:['var(--ok-tint)','var(--ok-ink)'],guess:['oklch(0.955 0.03 340)','oklch(0.50 0.11 340)']};
+    const reviewRows=qs.map(qq=>({ avatar:qq.avatar, author:qq.author, text:qq.text, typeLabel:this.typeLabel(qq.type).toUpperCase(), tintBg:(rTint[qq.type]||rTint.mc)[0], tintInk:(rTint[qq.type]||rTint.mc)[1] }));
+
+    return {
+      stepIcon:step[0], stepHint:step[1],
+      p_setup:phase==='setup', p_lobby:phase==='lobby', p_avatar:phase==='avatar', p_write:phase==='write',
+      p_submitted:phase==='submitted', p_review:phase==='review', p_podium:phase==='podium',
+      big_lobby:['lobby','avatar','write','submitted'].includes(phase),
+      lobbyWaiting:['lobby','avatar','write'].includes(phase),
+      phone_submitted:phase==='submitted'||phase==='review',
+      pl_active:pl==='active'&&phase==='play', pl_reveal:pl==='reveal'&&phase==='play', pl_scores:pl==='scores'&&phase==='play',
+      pa_input: phase==='play'&&pl==='active'&&!isUser&&!s.userAnswered,
+      pa_waiting: phase==='play'&&pl==='active'&&!isUser&&s.userAnswered,
+      pa_locked: phase==='play'&&pl==='active'&&isUser,
+      rev_locked:isUser, rev_correct:!isUser&&s.lastCorrect, rev_wrong:!isUser&&!s.lastCorrect,
+      rev_choice:ans_choice, rev_number:(q.type==='guess'||q.type==='short'),
+      phoneBg: (phase==='play'&&pl==='active'&&isUser)?'var(--surface-2)':'var(--paper)',
+      title:s.title, onTitle:(e)=>this.setState({title:e.target.value}),
+      createQuiz:()=>this.setState({phase:'lobby'}),
+      joinNow:()=>this.setState({phase:'avatar'}),
+      onName:(e)=>this.setState({name:e.target.value}), name:s.name, avatar:s.avatar,
+      enterLobby:()=>{ if(this.state.name.trim()) this.setState({phase:'write'}); },
+      chooseMC:()=>this.setState({uType:'mc'}), chooseTF:()=>this.setState({uType:'tf'}),
+      chooseShort:()=>this.setState({uType:'short'}), chooseGuess:()=>this.setState({uType:'guess'}),
+      onUText:(e)=>this.setState({uText:e.target.value}), onUNum:(e)=>this.setState({uNum:e.target.value}),
+      onUShort:(e)=>this.setState({uShort:e.target.value}),
+      setTFtrue:()=>this.setState({uTF:true}), setTFfalse:()=>this.setState({uTF:false}),
+      submitQ:()=>this.setState({phase:'submitted',wrote:5}),
+      openReview:()=>this.setState({phase:'review'}),
+      startQuiz:()=>this.setState({phase:'play',qi:0}, ()=>this.startQuestion()),
+      showScores:()=>this.setState({playStage:'scores'}),
+      nextQuestion:()=>this.nextQuestion(), restart:()=>this.restart(),
+      onGuess:(e)=>this.setState({guessInput:e.target.value}), guessInput:s.guessInput, submitGuess:()=>this.submitGuess(),
+      uText:s.uText, uNum:s.uNum, uShort:s.uShort,
+      ut_mc:s.uType==='mc', ut_tf:s.uType==='tf', ut_short:s.uType==='short', ut_guess:s.uType==='guess',
+      uOptRows,
+      mcBg:tm.bg,mcInk:tm.ink,mcBorder:tm.border, tfBg:tt.bg,tfInk:tt.ink,tfBorder:tt.border,
+      shortBg:tsh.bg,shortInk:tsh.ink,shortBorder:tsh.border, guessBg:tg.bg,guessInk:tg.ink,guessBorder:tg.border,
+      tfTrueBg:tfT.bg,tfTrueInk:tfT.ink,tfTrueBorder:tfT.border, tfFalseBg:tfF.bg,tfFalseInk:tfF.ink,tfFalseBorder:tfF.border,
+      avList, joinedAvatars, joinedCount:joinedAvatars.length, wrote:s.wrote,
+      waitMsg: 'your teacher to review and start the quiz…',
+      reviewRows,
+      qNum:s.qi+1, qTotal:qs.length, qText:q.text, qAuthor:q.author, qAvatar:q.avatar,
+      qOptions, ans_choice, ans_guess:q.type==='guess', ans_short:q.type==='short', qUnit:q.unit||'',
+      expected:exp, answered:Math.min(s.answered,exp), timeLeft:s.timeLeft,
+      ansPct:Math.round(100*Math.min(s.answered,exp)/exp),
+      ringStyle:'conic-gradient('+(s.timeLeft<=5?'var(--warn)':'var(--accent)')+' '+Math.round(100*s.timeLeft/s.duration)+'%, var(--surface-2) 0)',
+      ringAnim: (s.timeLeft<=5 && s.playStage==='active')?'ringPulse 1s ease-in-out infinite':'none',
+      correctText, dist,
+      r_points:s.pointsDisplay, r_streak:s.streak, r_rankText:ord(yourRank), yourScore:s.scores.You,
+      board, nextLabel: s.qi+1<qs.length?'Next question':'Final results',
+      podium:{ first:{name:sorted[0],avatar:avatarOf[sorted[0]],score:s.scores[sorted[0]]}, second:{name:sorted[1],avatar:avatarOf[sorted[1]],score:s.scores[sorted[1]]}, third:{name:sorted[2],avatar:avatarOf[sorted[2]],score:s.scores[sorted[2]]} },
+      ggEmoji: yourRank===1?'🏆':(yourRank<=3?'🥳':'👏'), ggNote: yourRank===1?'you won!':(yourRank<=3?'on the podium!':'good game!'),
+      confetti: Array.from({length:26}).map((_,i)=>{ const cols=['var(--accent)','var(--terra)','var(--sage)','var(--plum)','var(--warn)']; return {left:Math.round(Math.random()*100)+'%', size:(5+Math.round(Math.random()*6))+'px', color:cols[i%5], cr:(Math.round(Math.random()*720-360))+'deg', dur:(2.2+Math.random()*1.8).toFixed(2)+'s', delay:(Math.random()*2.2).toFixed(2)+'s'}; })
+    };
+  }
+}
+</script>
+</body>
+</html>

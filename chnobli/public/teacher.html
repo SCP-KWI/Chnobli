@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chnobli — Teacher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" />
+<link rel="stylesheet" href="/css/chalk-tokens.css">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  :root{ --maxw: 1000px; }
+  #stage-wrap{width:100%;max-width:760px}
+  .q-text{text-align:center;padding:14px 30px 26px;font:700 clamp(24px,3.6vw,34px)/1.25 'Source Sans 3';letter-spacing:-.02em}
+  .avatar-row{display:flex;flex-wrap:wrap;gap:8px}
+  .review-row{display:flex;align-items:center;gap:13px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper)}
+  .podium-bar{display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:2px;transform-origin:bottom;animation:growBar .5s ease-out both;border-radius:10px 10px 0 0}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="badge-icon"><span class="mi" style="font-size:19px">quiz</span></span>Chnobli <small>&nbsp;· teacher console</small></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="chip" id="stepChip"><span class="mi mif" style="font-size:16px;color:var(--accent)">edit_square</span>Set up a new quiz</span>
+      <button class="btn btn-secondary" id="endBtn" style="display:none;height:38px;padding:0 13px;font-size:12.5px"><span class="mi" style="font-size:16px">restart_alt</span>End quiz</button>
+    </div>
+  </div>
+  <div id="stage-wrap"></div>
+  <div class="hint">Project this screen for the class. Students join on their own phones at <b>/play</b> or by scanning the QR code.</div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/qrcode.min.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/teacher.js"></script>
+</body>
+</html>

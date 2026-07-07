@@ -1,0 +1,147 @@
+/* ============================================================================
+   CHALK — design system tokens
+   A warm-neutral, muted-pastel system for a family of teacher tools.
+   Drop this into any project and build with the variables below.
+
+   Light is the default (:root). Dark activates on  html[data-theme="dark"]
+   (or any ancestor with [data-theme="dark"] if you want it scoped).
+
+   Colors are oklch: oklch(Lightness Chroma Hue).
+   All four app accents share ~the same L and C and differ only in hue,
+   which is what makes them read as one family.
+   ============================================================================ */
+
+:root {
+  /* ---- Neutrals (warm paper) — LIGHT --------------------------------- */
+  --paper:        oklch(0.985 0.006 83);   /* app background            */
+  --surface:      oklch(0.998 0.003 83);   /* cards / raised surfaces   */
+  --surface-2:    oklch(0.955 0.008 83);   /* sunken / subtle fills     */
+  --line:         oklch(0.912 0.010 83);   /* hairline borders          */
+  --line-strong:  oklch(0.845 0.013 83);   /* input borders / dividers  */
+  --ink:          oklch(0.290 0.014 70);   /* primary text              */
+  --muted:        oklch(0.520 0.012 70);   /* secondary text            */
+  --faint:        oklch(0.660 0.010 70);   /* tertiary text / icons     */
+
+  --shadow:    0 1px 2px rgba(52,42,26,.05), 0 6px 20px rgba(52,42,26,.05);
+  --shadow-lg: 0 2px 4px rgba(52,42,26,.06), 0 18px 44px rgba(52,42,26,.10);
+
+  /* ---- App accents — LIGHT ------------------------------------------- */
+  /* Names — terracotta (hue 45) */
+  --names:        oklch(0.700 0.110 45);
+  --names-tint:   oklch(0.955 0.032 55);
+  --names-ink:    oklch(0.500 0.120 42);
+  /* Grades — sage (hue 152) */
+  --grades:       oklch(0.705 0.088 152);
+  --grades-tint:  oklch(0.955 0.030 155);
+  --grades-ink:   oklch(0.475 0.098 152);
+  /* Observations — plum (hue 340) */
+  --observations:      oklch(0.700 0.108 340);
+  --observations-tint: oklch(0.955 0.032 338);
+  --observations-ink:  oklch(0.515 0.118 338);
+  /* Quizzes — slate blue (hue 255) */
+  --quizzes:      oklch(0.680 0.100 255);
+  --quizzes-tint: oklch(0.955 0.028 258);
+  --quizzes-ink:  oklch(0.500 0.115 258);
+
+  /* ---- Semantic / status — LIGHT ------------------------------------- */
+  /* positive / success — sage (same family as Grades) */
+  --ok:        oklch(0.705 0.088 152);
+  --ok-tint:   oklch(0.955 0.030 155);
+  --ok-ink:    oklch(0.475 0.098 152);
+  /* caution / low-confidence — amber (hue 78) */
+  --warn:      oklch(0.760 0.100 78);
+  --warn-tint: oklch(0.958 0.034 82);
+  --warn-ink:  oklch(0.500 0.090 68);
+  /* negative / error — red (hue 26) */
+  --bad:       oklch(0.635 0.140 26);
+  --bad-tint:  oklch(0.955 0.032 30);
+  --bad-ink:   oklch(0.520 0.150 26);
+  /* neutral marker (bars, dots) */
+  --neutral:   oklch(0.760 0.012 80);
+
+  /* ---- Shape ---------------------------------------------------------- */
+  --r-sm: 9px;
+  --r:    12px;
+  --r-md: 14px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  color-scheme: light;
+}
+
+/* ---- Neutrals + tints — DARK (warm ink, never pure black) ------------ */
+html[data-theme="dark"],
+[data-theme="dark"] {
+  --paper:        oklch(0.205 0.008 75);
+  --surface:      oklch(0.248 0.010 75);
+  --surface-2:    oklch(0.292 0.011 75);
+  --line:         oklch(0.335 0.012 75);
+  --line-strong:  oklch(0.410 0.014 75);
+  --ink:          oklch(0.935 0.008 83);
+  --muted:        oklch(0.705 0.011 80);
+  --faint:        oklch(0.560 0.010 80);
+
+  --shadow:    0 1px 2px rgba(0,0,0,.30), 0 8px 24px rgba(0,0,0,.36);
+  --shadow-lg: 0 2px 6px rgba(0,0,0,.34), 0 22px 52px rgba(0,0,0,.48);
+
+  /* Accent SOLIDS stay the same across modes; only tint/ink shift. */
+  --names-tint:   oklch(0.340 0.052 45);
+  --names-ink:    oklch(0.820 0.098 52);
+  --grades-tint:  oklch(0.335 0.044 152);
+  --grades-ink:   oklch(0.825 0.088 155);
+  --observations-tint: oklch(0.345 0.054 338);
+  --observations-ink:  oklch(0.830 0.098 338);
+  --quizzes-tint: oklch(0.345 0.050 255);
+  --quizzes-ink:  oklch(0.830 0.088 258);
+
+  --ok-tint:   oklch(0.335 0.044 152);
+  --ok-ink:    oklch(0.825 0.088 155);
+  --warn-tint: oklch(0.350 0.046 78);
+  --warn-ink:  oklch(0.840 0.088 82);
+  --bad-tint:  oklch(0.345 0.060 28);
+  --bad-ink:   oklch(0.820 0.110 30);
+
+  color-scheme: dark;
+}
+
+/* ----------------------------------------------------------------------------
+   PER-APP ACCENT ALIAS
+   In a single app, alias the active accent to --accent / --accent-tint /
+   --accent-ink and build components against those. Swap ONE block to re-theme
+   the whole app. (The design-system reference uses [data-app="…"] to do this
+   for all four at once.)
+   ---------------------------------------------------------------------------- */
+:root { /* Chnobli is the Quizzes app: */
+  --accent:      var(--quizzes);
+  --accent-tint: var(--quizzes-tint);
+  --accent-ink:  var(--quizzes-ink);
+}
+
+[data-app="names"]        { --accent: var(--names);        --accent-tint: var(--names-tint);        --accent-ink: var(--names-ink); }
+[data-app="grades"]       { --accent: var(--grades);       --accent-tint: var(--grades-tint);       --accent-ink: var(--grades-ink); }
+[data-app="observations"] { --accent: var(--observations); --accent-tint: var(--observations-tint); --accent-ink: var(--observations-ink); }
+[data-app="quizzes"]      { --accent: var(--quizzes);      --accent-tint: var(--quizzes-tint);      --accent-ink: var(--quizzes-ink); }
+
+/* ----------------------------------------------------------------------------
+   TYPOGRAPHY — load these in <head>:
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="stylesheet"
+     href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+   <link rel="stylesheet"
+     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block">
+   ---------------------------------------------------------------------------- */
+:root {
+  --font-ui:   "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Icon helper — Material Symbols Rounded, used as ligature text spans. */
+.mi {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; white-space: nowrap;
+  font-feature-settings: "liga";
+  vertical-align: middle;
+}

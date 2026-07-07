@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chnobli — Play</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" />
+<link rel="stylesheet" href="/css/chalk-tokens.css">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  .top-row{display:flex;align-items:center;justify-content:space-between}
+  .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .avatar-pick{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:24px;background:var(--surface-2);outline:2.5px solid transparent;outline-offset:2px}
+  .avatar-pick.on{background:var(--accent-tint);outline-color:var(--accent)}
+  .type-row{display:flex;gap:7px}
+  .type-row .type-chip{flex:1;flex-direction:column;padding:10px 4px;font-size:11.5px;border-radius:10px}
+  .opt-row{display:flex;align-items:center;gap:8px;height:44px;border:1.5px solid var(--line-strong);border-radius:11px;padding:0 10px;background:var(--paper)}
+  .opt-row.correct{border-color:var(--accent);background:var(--accent-tint)}
+  .opt-row input{border:none;box-shadow:none;background:none;height:38px;font-size:14px;padding:0}
+  .answer-tile{border:none;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;color:#fff;font-weight:600;font-size:13px;animation:tileIn .3s ease-out both}
+  .answer-tile .letter{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.22);display:grid;place-items:center;font:700 15px var(--font-mono)}
+</style>
+</head>
+<body class="student-shell">
+  <div class="student-page" id="app"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/shared.js"></script>
+  <script src="/js/student.js"></script>
+</body>
+</html>

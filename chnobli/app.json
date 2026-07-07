@@ -1,0 +1,8 @@
+{
+  "name": "Chnobli",
+  "description": "Students write the quiz questions; the class plays them live, Kahoot-style.",
+  "icon": "🧠",
+  "route": "https://chnobli.schaffner.xyz",
+  "tags": ["KWI"],
+  "tier": "dynamic"
+}
