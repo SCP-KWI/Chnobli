@@ -32,6 +32,37 @@
     bottomHint.innerHTML = t('bottomHintTeacher', { host: '<b>/play</b>' });
   }
 
+  // Full-screen, large QR code so students at the back of the room can
+  // scan it — lives outside #stage-wrap so a lobby re-render (e.g. someone
+  // else joining) can't wipe it out while it's open.
+  function openQrModal(joinUrl, code) {
+    if (document.getElementById('qrModalOverlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'qrModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(24,20,14,.86);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px;animation:riseIn .2s ease-out both';
+    overlay.innerHTML = `
+      <div style="position:relative;background:#fff;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:var(--shadow-lg);max-width:min(600px,90vw)">
+        <button type="button" id="qrModalClose" style="position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:10px;background:#f2ede3;color:#3a3226;display:grid;place-items:center"><span class="mi" style="font-size:20px">close</span></button>
+        <div id="qrBig" style="line-height:0"></div>
+        <div style="font:700 clamp(32px,6vw,52px)/1 var(--font-mono);letter-spacing:.14em;color:#241f18">${esc(code)}</div>
+        <div style="font-size:13px;color:#8a8073">${esc(t('tapToCloseHint'))}</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    const qrSize = Math.round(Math.min(window.innerWidth * 0.8, window.innerHeight * 0.6, 460));
+    new QRCode(overlay.querySelector('#qrBig'), { text: joinUrl, width: qrSize, height: qrSize, colorDark: '#241f18', colorLight: '#ffffff' });
+
+    function close() {
+      overlay.remove();
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('#qrModalClose').addEventListener('click', close);
+    document.addEventListener('keydown', onKey);
+  }
+
   try { session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { session = null; }
 
   function saveSession(s) {
@@ -158,6 +189,7 @@
             <div style="font-size:12px;color:var(--muted)">${t('joinAt', { host: `<b style="color:var(--ink)">${esc(location.host)}</b>` })}</div>
             <div class="mono" style="font:700 54px/1 var(--font-mono);letter-spacing:.14em;color:var(--accent-ink)">${esc(view.code)}</div>
             <div id="qr" style="width:132px;height:132px;border-radius:var(--r);overflow:hidden;background:#fff;display:grid;place-items:center;border:1px solid var(--line)"></div>
+            <button type="button" id="qrMagnify" class="btn btn-secondary" style="height:32px;padding:0 12px;font-size:12px;gap:5px"><span class="mi" style="font-size:16px">zoom_in</span>${esc(t('enlargeQr'))}</button>
           </div>
           <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:12px;min-height:170px">
             <div class="mono" style="font:600 12px var(--font-mono);color:var(--muted)">${esc(t('joinedWrote', { joined: view.joinedCount, wrote: view.wroteCount }))}</div>
@@ -208,6 +240,7 @@
 
     if (view.phase === 'lobby') {
       new QRCode(stage.querySelector('#qr'), { text: joinUrl, width: 128, height: 128, colorDark: '#241f18', colorLight: '#ffffff' });
+      stage.querySelector('#qrMagnify').addEventListener('click', () => openQrModal(joinUrl, view.code));
       const reviewBtn = stage.querySelector('#reviewBtn');
       reviewBtn && reviewBtn.addEventListener('click', () => socket.emit('teacher:openReview', session, () => {}));
     } else {

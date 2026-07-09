@@ -6,11 +6,12 @@ system, slate-blue accent, letter-badge answers), not a Kahoot skin.
 
 ## Roles
 
-- **Teacher** (`/teacher`) — create a quiz, show the join code/QR, review
-  student-submitted questions (approve it, send it back for the student to
-  revise and resubmit, or decline it for good), then run the live
-  presentation: question → timer → live answer count → reveal → leaderboard
-  → next question → final podium.
+- **Teacher** (`/teacher`) — create a quiz, show the join code/QR (with a
+  one-tap full-screen blow-up of the QR code for students scanning from the
+  back of the room), review student-submitted questions (approve it, send
+  it back for the student to revise and resubmit, or decline it for good),
+  then run the live presentation: question → timer → live answer count →
+  reveal → leaderboard → next question → final podium.
 - **Student** (`/play`) — join by code or QR, pick an avatar from one of
   5 pages of 8 (animals, smileys, more animals, sports, food — swipe or use
   the arrows to page through) + a nickname, write one question (multiple

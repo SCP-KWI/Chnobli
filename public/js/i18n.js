@@ -54,6 +54,8 @@
       nobodyYet: 'Noch niemand da — teile den Code!',
       reviewQuestionsBtn: 'Fragen prüfen',
       lobbyOpenBadge: 'Lobby offen',
+      enlargeQr: 'QR-Code vergrössern',
+      tapToCloseHint: 'Tippen zum Schliessen',
 
       // review
       stepReview: 'Fragen prüfen & freigeben',
@@ -252,6 +254,8 @@
       nobodyYet: 'Nobody yet — share the code!',
       reviewQuestionsBtn: 'Review questions',
       lobbyOpenBadge: 'Lobby open',
+      enlargeQr: 'Enlarge QR code',
+      tapToCloseHint: 'Tap to close',
 
       stepReview: 'Review & approve questions',
       reviewQuestionsTitle: 'Review questions',
