@@ -173,6 +173,7 @@
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
               <span class="badge badge-neutral">${esc(t('type_' + r.type).toUpperCase())}</span>
+              <span class="badge badge-neutral"><span class="mi mif" style="font-size:12px">timer</span>${r.durationSec}s</span>
               <span style="font-size:12px;color:var(--muted)">${esc(r.author)}</span>
               ${r.status === 'approved' ? `<span class="badge badge-ok"><span class="mi mif" style="font-size:12px">check</span>${esc(t('approvedBadge'))}</span>` : ''}
               ${r.status === 'rejected' ? `<span class="badge" style="background:var(--bad-tint);color:var(--bad-ink)">${esc(t('sentBackBadge'))}</span>` : ''}

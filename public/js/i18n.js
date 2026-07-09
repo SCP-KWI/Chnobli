@@ -121,6 +121,7 @@
       correctNumberLabel: 'Richtige Zahl',
       unitLabel: 'Einheit (optional)',
       unitPlaceholder: 'z. B. Knochen',
+      timeLimitLabel: 'Zeitlimit',
       submitForReviewBtn: 'Zur Prüfung einreichen',
       submitErrorGeneric: 'Konnte nicht eingereicht werden.',
 
@@ -296,6 +297,7 @@
       correctNumberLabel: 'Correct number',
       unitLabel: 'Unit (optional)',
       unitPlaceholder: 'e.g. bones',
+      timeLimitLabel: 'Time limit',
       submitForReviewBtn: 'Submit for review',
       submitErrorGeneric: 'Could not submit.',
 

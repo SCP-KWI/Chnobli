@@ -163,6 +163,8 @@
   }
 
   // ---- WRITE QUESTION --------------------------------------------------------
+  const DURATION_OPTIONS = [10, 20, 30, 40];
+
   function typeDefs() {
     return [
       ['mc', 'list_alt', t('type_mc_short')],
@@ -177,11 +179,11 @@
     if (!writeDraft || writeDraft._code !== v.code) {
       const d = v.draft;
       writeDraft = d ? {
-        _code: v.code, type: d.type, text: d.text || '',
+        _code: v.code, type: d.type, text: d.text || '', durationSec: DURATION_OPTIONS.includes(d.durationSec) ? d.durationSec : 20,
         options: (d.options && d.options.length ? d.options.slice(0, 4) : ['', '', '', '']),
         correctIndex: d.correctIndex || 0, tf: d.tf !== false, answer: d.answer || '', num: d.num != null ? String(d.num) : '', unit: d.unit || '',
       } : {
-        _code: v.code, type: allowed[0], text: '', options: ['', '', '', ''], correctIndex: 0, tf: true, answer: '', num: '', unit: '',
+        _code: v.code, type: allowed[0], text: '', durationSec: 20, options: ['', '', '', ''], correctIndex: 0, tf: true, answer: '', num: '', unit: '',
       };
     }
     paintWrite(v, allowed);
@@ -197,11 +199,23 @@
           <button type="button" class="type-chip ${d.type === type ? 'on' : ''}" data-type="${type}"><span class="mi mif" style="font-size:18px">${icon}</span>${esc(label)}</button>`).join('')}</div>
         <textarea id="qText" rows="2" placeholder="${esc(t('questionPlaceholder'))}" style="padding:10px 12px;font-size:14px;font-weight:500;resize:none">${esc(d.text)}</textarea>
         <div id="typeFields"></div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="eyebrow" style="margin-bottom:0">${esc(t('timeLimitLabel'))}</div>
+            <span class="mono" id="durationVal" style="font:600 15px var(--font-mono);color:var(--accent-ink)">${d.durationSec}s</span>
+          </div>
+          <input type="range" class="slider" id="durationRange" min="10" max="40" step="10" value="${d.durationSec}" />
+          <div class="slider-ticks"><span>10s</span><span>20s</span><span>30s</span><span>40s</span></div>
+        </div>
         <div style="flex:1"></div>
         <div id="writeErr" style="color:var(--bad-ink);font-size:13px;display:none"></div>
         <button class="btn btn-primary btn-block btn-lg" id="submitQBtn">${esc(t('submitForReviewBtn'))}<span class="mi" style="font-size:20px">arrow_forward</span></button>
       </div>`;
     app.querySelector('#qText').addEventListener('input', (e) => { d.text = e.target.value; });
+    app.querySelector('#durationRange').addEventListener('input', (e) => {
+      d.durationSec = parseInt(e.target.value, 10);
+      app.querySelector('#durationVal').textContent = `${d.durationSec}s`;
+    });
     app.querySelectorAll('.type-chip').forEach((btn) => btn.addEventListener('click', () => {
       d.type = btn.dataset.type;
       app.querySelectorAll('.type-chip').forEach((b) => b.classList.toggle('on', b.dataset.type === d.type));
@@ -251,7 +265,7 @@
 
   function submitQuestion() {
     const d = writeDraft;
-    const question = { type: d.type, text: d.text };
+    const question = { type: d.type, text: d.text, durationSec: d.durationSec };
     if (d.type === 'mc') { question.options = d.options; question.correctIndex = d.correctIndex; }
     else if (d.type === 'tf') { question.tf = d.tf; }
     else if (d.type === 'short') { question.answer = d.answer; }

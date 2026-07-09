@@ -12,8 +12,9 @@ system, slate-blue accent, letter-badge answers), not a Kahoot skin.
   question → final podium.
 - **Student** (`/play`) — join by code or QR, pick an avatar + nickname,
   write one question (multiple choice, true/false, short answer, or guess
-  the number), then play every question except their own — they sit that
-  one out while the rest of the class answers it.
+  the number) with its own time limit — a 10/20/30/40s slider — then play
+  every question except their own — they sit that one out while the rest
+  of the class answers it.
 
 ## Language
 

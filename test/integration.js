@@ -6,7 +6,7 @@
 //
 // This does NOT spawn the server itself (spawning a nested Node process
 // proved unreliable in some sandboxes) — start the server first, e.g.:
-//   PORT=3987 QUESTION_DURATION_MS=4000 node server/index.js &
+//   PORT=3987 node server/index.js &
 //   sleep 1 && node test/integration.js
 // See test/run.sh for the one-shot version.
 
@@ -147,10 +147,10 @@ async function main() {
   await waitUntil(() => teacherState && teacherState.joinedCount === 4, { label: 'teacher sees 4 joined players' });
 
   const questions = [
-    { type: 'mc', text: 'Closest planet to the sun?', options: ['Mercury', 'Venus', 'Earth', 'Mars'], correctIndex: 0 },
-    { type: 'tf', text: 'Chlorophyll makes plants look green.', tf: true },
-    { type: 'guess', text: 'Bones in an adult human body?', num: 206, unit: 'bones' },
-    { type: 'short', text: 'Powerhouse of the cell?', answer: 'Mitochondrion' },
+    { type: 'mc', text: 'Closest planet to the sun?', durationSec: 10, options: ['Mercury', 'Venus', 'Earth', 'Mars'], correctIndex: 0 },
+    { type: 'tf', text: 'Chlorophyll makes plants look green.', durationSec: 20, tf: true },
+    { type: 'guess', text: 'Bones in an adult human body?', durationSec: 30, num: 206, unit: 'bones' },
+    { type: 'short', text: 'Powerhouse of the cell?', durationSec: 40, answer: 'Mitochondrion' },
   ];
   for (let i = 0; i < students.length; i++) {
     const res = await emit(students[i].socket, 'student:submitQuestion', { code: session.code, playerId: students[i].playerId, question: questions[i] });
@@ -158,6 +158,24 @@ async function main() {
   }
 
   await waitUntil(() => teacherState && teacherState.wroteCount === 4, { label: 'teacher sees 4 submitted questions' });
+  check(teacherState.reviewRows.every((r) => questions.some((q) => q.durationSec === r.durationSec)), 'each question shows the duration its author chose');
+
+  // A bogus duration should silently fall back to the 20s default rather
+  // than being rejected outright. Use a disposable 5th student whose
+  // question is rejected right away, so it can't disturb the play order below.
+  const spareStudent = makeStudent('Sparrow', '🐬');
+  await connected(spareStudent.socket);
+  const spareJoin = await emit(spareStudent.socket, 'student:join', { code: session.code, playerId: null });
+  await emit(spareStudent.socket, 'student:setProfile', { code: session.code, playerId: spareJoin.playerId, name: 'Sparrow', avatar: '🐬' });
+  const bogusDurationRes = await emit(spareStudent.socket, 'student:submitQuestion', {
+    code: session.code, playerId: spareJoin.playerId,
+    question: { type: 'tf', text: 'Filler question, never approved.', tf: true, durationSec: 17 },
+  });
+  check(bogusDurationRes.ok, 'a non-standard duration is accepted (and normalized) rather than rejected');
+  await waitUntil(() => teacherState.reviewRows && teacherState.reviewRows.some((r) => r.author === 'Sparrow' && r.durationSec === 20), { label: 'the normalized duration falls back to 20s' });
+  const spareRow = teacherState.reviewRows.find((r) => r.author === 'Sparrow');
+  await emit(teacher, 'teacher:reject', { ...session, questionId: spareRow.id });
+  spareStudent.socket.close();
 
   // ---- Reject-then-resubmit flow ---------------------------------------
   teacher.emit('teacher:openReview', session, () => {});
@@ -168,7 +186,9 @@ async function main() {
   const resubmit = await emit(students[0].socket, 'student:submitQuestion', { code: session.code, playerId: students[0].playerId, question: questions[0] });
   check(resubmit.ok, 'author edits and resubmits the rejected question');
 
-  for (const row of (await waitUntil(() => teacherState.reviewRows.every((r) => r.status !== 'rejected') && teacherState.reviewRows, { label: 'no rejected rows remain' }))) {
+  const studentNames = students.map((s) => s.name);
+  const realRows = () => teacherState.reviewRows.filter((r) => studentNames.includes(r.author));
+  for (const row of (await waitUntil(() => realRows().every((r) => r.status !== 'rejected') && realRows(), { label: 'no rejected rows remain among the real questions' }))) {
     await emit(teacher, 'teacher:approve', { ...session, questionId: row.id });
   }
   await waitUntil(() => teacherState.approvedCount === 4, { label: 'all 4 questions approved' });
@@ -186,6 +206,7 @@ async function main() {
     const authorName = teacherState.qAuthor;
     const author = students.find((s) => s.name === authorName);
     check(author.state.step === 'play' && author.state.isUser === true, `author (${authorName}) is locked out of their own question`);
+    check(teacherState.durationSec === questions[qi].durationSec, `question ${qi + 1} runs for the ${questions[qi].durationSec}s its author chose`);
 
     const lockedAttempt = await emit(author.socket, 'student:submitAnswer', { code: session.code, playerId: author.playerId, value: 0 });
     check(lockedAttempt.ok === false, `${authorName} cannot answer their own question`);
@@ -234,7 +255,9 @@ async function main() {
   }
 
   await waitUntil(() => teacherState.phase === 'podium', { label: 'quiz reaches the podium after the last question' });
-  check(Array.isArray(teacherState.board) && teacherState.board.length === 4, 'final leaderboard has all 4 players');
+  // Sparrow also joined this room (for the bogus-duration check above), so
+  // the board has 5 entries — just confirm the 4 real players are all in it.
+  check(Array.isArray(teacherState.board) && studentNames.every((n) => teacherState.board.some((r) => r.name === n)), 'final leaderboard has all 4 real players');
   const sortedDesc = [...teacherState.board].every((r, i, arr) => i === 0 || arr[i - 1].score >= r.score);
   check(sortedDesc, 'final leaderboard is sorted by score descending');
   check(teacherState.podium.first.score >= teacherState.podium.second.score, 'first place score >= second place');

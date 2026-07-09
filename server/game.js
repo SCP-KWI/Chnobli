@@ -6,7 +6,9 @@ const I18N = require('../public/js/i18n.js');
 
 const QUESTION_TYPES = ['mc', 'tf', 'short', 'guess'];
 const AVATARS = ['🦊', '🦉', '🐙', '🦋', '🐬', '🦄', '🐝', '🐧'];
-const QUESTION_DURATION_MS = parseInt(process.env.QUESTION_DURATION_MS, 10) || 20000;
+// Authors pick their question's time limit from exactly these four stops.
+const DURATION_OPTIONS_SEC = [10, 20, 30, 40];
+const DEFAULT_DURATION_SEC = 20;
 const BASE_POINTS = 700;
 const SPEED_BONUS = 300;
 
@@ -43,6 +45,9 @@ function sanitizeQuestion(raw, allowedTypes, lang) {
   if (allowedTypes && !allowedTypes.includes(type)) return err('err_typeNotEnabled');
   const text = String(raw.text || '').trim().slice(0, 240);
   if (!text) return err('err_writeQuestionFirst');
+  const durationSec = DURATION_OPTIONS_SEC.includes(parseInt(raw.durationSec, 10))
+    ? parseInt(raw.durationSec, 10)
+    : DEFAULT_DURATION_SEC;
 
   if (type === 'mc') {
     const options = (Array.isArray(raw.options) ? raw.options : [])
@@ -55,22 +60,22 @@ function sanitizeQuestion(raw, allowedTypes, lang) {
     if (correctIndex < 0 || correctIndex >= options.length || !options[correctIndex]) {
       correctIndex = options.findIndex((o) => o.length > 0);
     }
-    return { ok: true, question: { type, text, options, correctIndex } };
+    return { ok: true, question: { type, text, durationSec, options, correctIndex } };
   }
   if (type === 'tf') {
     const tf = !!raw.tf;
-    return { ok: true, question: { type, text, tf } };
+    return { ok: true, question: { type, text, durationSec, tf } };
   }
   if (type === 'short') {
     const answer = String(raw.answer || '').trim().slice(0, 80);
     if (!answer) return err('err_addAcceptedAnswer');
-    return { ok: true, question: { type, text, answer } };
+    return { ok: true, question: { type, text, durationSec, answer } };
   }
   if (type === 'guess') {
     const num = parseFloat(raw.num);
     if (!Number.isFinite(num)) return err('err_addCorrectNumber');
     const unit = String(raw.unit || '').trim().slice(0, 24);
-    return { ok: true, question: { type, text, num, unit } };
+    return { ok: true, question: { type, text, durationSec, num, unit } };
   }
   return err('err_unknownType');
 }
@@ -113,6 +118,6 @@ function rankMap(scoresByPlayerId) {
 }
 
 module.exports = {
-  QUESTION_TYPES, AVATARS, QUESTION_DURATION_MS, BASE_POINTS, SPEED_BONUS,
+  QUESTION_TYPES, AVATARS, DURATION_OPTIONS_SEC, DEFAULT_DURATION_SEC, BASE_POINTS, SPEED_BONUS,
   newId, randomCode, randomToken, ordinal, sanitizeQuestion, checkAnswer, pointsFor, rankMap,
 };

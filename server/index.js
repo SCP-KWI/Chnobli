@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 
 const { RoomManager } = require('./rooms');
 const {
-  AVATARS, QUESTION_DURATION_MS, newId, ordinal,
+  AVATARS, DEFAULT_DURATION_SEC, newId, ordinal,
   sanitizeQuestion, checkAnswer, pointsFor, rankMap,
 } = require('./game');
 const I18N = require('../public/js/i18n.js');
@@ -73,11 +73,14 @@ function startQuestion(room) {
   clearRoomTimer(room);
   const scoreSnapshot = {};
   room.players.forEach((p) => { scoreSnapshot[p.id] = p.score; });
+  const questionId = room.playOrder[room.currentIndex];
+  const q = getQuestion(room, questionId);
+  const durationSec = (q && q.durationSec) || DEFAULT_DURATION_SEC;
   room.current = {
-    questionId: room.playOrder[room.currentIndex],
+    questionId,
     stage: 'active',
     startedAt: Date.now(),
-    durationMs: QUESTION_DURATION_MS,
+    durationMs: durationSec * 1000,
     answers: new Map(),
     prevRank: rankMap(scoreSnapshot),
   };
@@ -126,6 +129,7 @@ function reviewRows(room) {
     author: q.authorName,
     avatar: q.authorAvatar,
     status: q.status,
+    durationSec: q.durationSec || DEFAULT_DURATION_SEC,
   }));
 }
 
@@ -270,7 +274,7 @@ function studentView(room, player) {
     if (!q || q.status === 'rejected') {
       base.step = 'write';
       base.rejected = !!(q && q.status === 'rejected');
-      base.draft = q ? { type: q.type, text: q.text, options: q.options, correctIndex: q.correctIndex, tf: q.tf, answer: q.answer, num: q.num, unit: q.unit } : null;
+      base.draft = q ? { type: q.type, text: q.text, durationSec: q.durationSec, options: q.options, correctIndex: q.correctIndex, tf: q.tf, answer: q.answer, num: q.num, unit: q.unit } : null;
       return base;
     }
     base.step = 'submitted';
