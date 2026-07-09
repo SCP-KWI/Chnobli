@@ -1,7 +1,10 @@
 // Shared helpers used by both the teacher console and the student app.
-// Requires avatars.js to be loaded first (it sets window.Avatars).
+// avatars.js (window.Avatars) is only actually used by the student picker,
+// but every page loads shared.js — fall back to an empty catalogue instead
+// of throwing if a page ever forgets the <script> tag, so one missing
+// include can't take down the whole console.
 (function (global) {
-  const { AVATARS, AVATAR_PAGES } = global.Avatars;
+  const { AVATARS, AVATAR_PAGES } = global.Avatars || { AVATARS: [], AVATAR_PAGES: [] };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
