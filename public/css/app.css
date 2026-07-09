@@ -42,6 +42,10 @@ a{color:inherit}
 .btn-secondary:hover:not(:disabled){border-color:var(--ink)}
 .btn-ghost{background:transparent;color:var(--accent-ink)}
 .btn-ghost:hover:not(:disabled){background:var(--accent-tint)}
+.btn-warn{background:var(--surface);color:var(--warn-ink);border:1.5px solid var(--line-strong)}
+.btn-warn:hover:not(:disabled){border-color:var(--warn)}
+.btn-danger{background:var(--surface);color:var(--bad-ink);border:1.5px solid var(--line-strong)}
+.btn-danger:hover:not(:disabled){border-color:var(--bad)}
 .btn-block{width:100%}
 .btn-lg{height:56px;font-size:16px}
 

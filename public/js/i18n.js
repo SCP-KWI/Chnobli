@@ -60,7 +60,11 @@
       reviewQuestionsTitle: 'Fragen prüfen',
       approvedBadge: 'Freigegeben',
       sentBackBadge: 'Zurückgeschickt',
+      declinedBadge: 'Abgelehnt',
       approveBtn: 'Freigeben',
+      sendBackBtn: 'Zurückschicken',
+      declineBtn: 'Ablehnen',
+      declineConfirm: 'Diese Frage endgültig ablehnen? Die Person kann sie danach nicht mehr überarbeiten oder erneut einreichen.',
       noQuestionsYet: 'Noch keine Fragen eingereicht.',
       approvedPending: '{approved} FREIGEGEBEN · {pending} OFFEN',
       startQuizBtn: 'Quiz starten',
@@ -130,6 +134,10 @@
       submittedBody: 'Warte, bis deine Lehrperson das Quiz prüft und startet…',
       submittedBadge: 'DU SPIELST, SOBALD ES STARTET',
 
+      // student — declined (permanent, no resubmission)
+      declinedTitle: 'Deine Frage wurde nicht verwendet',
+      declinedBody: 'Kein Problem — du spielst trotzdem beim ganzen Quiz mit.',
+
       // student — locked (own question)
       lockedTitle: 'Die ist von dir!',
       lockedBody: 'Du hast diese Frage geschrieben, darum pausierst du — keine Punkte in dieser Runde.',
@@ -187,6 +195,7 @@
       err_joinLobbyFirst: 'Tritt zuerst der Lobby bei.',
       err_quizAlreadyStarted: 'Das Quiz hat bereits begonnen.',
       err_alreadyApproved: 'Deine Frage wurde bereits freigegeben und kann nicht mehr bearbeitet werden.',
+      err_alreadyDeclined: 'Diese Frage wurde abgelehnt und kann nicht mehr bearbeitet werden.',
       err_noActiveQuestion: 'Gerade läuft keine aktive Frage.',
       err_cantAnswerOwn: 'Du kannst deine eigene Frage nicht beantworten.',
       err_alreadyAnswered: 'Bereits beantwortet.',
@@ -243,7 +252,11 @@
       reviewQuestionsTitle: 'Review questions',
       approvedBadge: 'Approved',
       sentBackBadge: 'Sent back',
+      declinedBadge: 'Declined',
       approveBtn: 'Approve',
+      sendBackBtn: 'Send back',
+      declineBtn: 'Decline',
+      declineConfirm: "Decline this question for good? They won't be able to revise or resubmit it after this.",
       noQuestionsYet: 'No questions submitted yet.',
       approvedPending: '{approved} APPROVED · {pending} PENDING',
       startQuizBtn: 'Start quiz',
@@ -305,6 +318,9 @@
       submittedBody: 'Waiting for your teacher to review and start the quiz…',
       submittedBadge: "YOU'LL PLAY WHEN IT STARTS",
 
+      declinedTitle: "Your question wasn't used this time",
+      declinedBody: "No worries — you'll still play the rest of the quiz.",
+
       lockedTitle: "This one's yours!",
       lockedBody: "You wrote this question, so you're sitting it out — no points this round.",
       answeringCount: '{n} / {m} answering…',
@@ -354,6 +370,7 @@
       err_joinLobbyFirst: 'Join the lobby first.',
       err_quizAlreadyStarted: 'The quiz has already started.',
       err_alreadyApproved: 'Your question was already approved and can no longer be edited.',
+      err_alreadyDeclined: 'This question was declined and can no longer be edited.',
       err_noActiveQuestion: 'No active question right now.',
       err_cantAnswerOwn: "You can't answer your own question.",
       err_alreadyAnswered: 'Already answered.',

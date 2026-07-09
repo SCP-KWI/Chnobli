@@ -7,9 +7,10 @@ system, slate-blue accent, letter-badge answers), not a Kahoot skin.
 ## Roles
 
 - **Teacher** (`/teacher`) — create a quiz, show the join code/QR, review
-  and approve student-submitted questions, then run the live presentation:
-  question → timer → live answer count → reveal → leaderboard → next
-  question → final podium.
+  student-submitted questions (approve it, send it back for the student to
+  revise and resubmit, or decline it for good), then run the live
+  presentation: question → timer → live answer count → reveal → leaderboard
+  → next question → final podium.
 - **Student** (`/play`) — join by code or QR, pick an avatar + nickname,
   write one question (multiple choice, true/false, short answer, or guess
   the number) with its own time limit — a 10/20/30/40s slider — then play

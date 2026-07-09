@@ -95,6 +95,7 @@
     if (v.step === 'avatar') return renderAvatar(v);
     if (v.step === 'write') return renderWrite(v);
     if (v.step === 'submitted') return renderSubmitted(v);
+    if (v.step === 'declined') return renderDeclined(v);
     if (v.step === 'play') {
       if (v.stage === 'active') return v.isUser ? renderLocked(v) : (v.hasAnswered ? renderWaiting(v) : renderInput(v));
       if (v.stage === 'reveal') return renderReveal(v);
@@ -285,6 +286,15 @@
       <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">${esc(t('submittedTitle'))}</div>
       <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">${esc(t('submittedBody'))}</div>
       <span class="badge badge-neutral">${esc(t('submittedBadge'))}</span>
+    </div>`;
+  }
+
+  // ---- DECLINED (final — no resubmission) -------------------------------------
+  function renderDeclined() {
+    app.innerHTML = `<div class="center-col">
+      <span style="width:70px;height:70px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center"><span class="mi" style="font-size:36px">inbox</span></span>
+      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">${esc(t('declinedTitle'))}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">${esc(t('declinedBody'))}</div>
     </div>`;
   }
 

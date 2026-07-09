@@ -214,7 +214,7 @@ function teacherView(room) {
 
   if (room.phase === 'lobby' || room.phase === 'review') {
     base.reviewRows = reviewRows(room);
-    base.pendingCount = base.reviewRows.filter((r) => r.status === 'pending').length;
+    base.pendingCount = base.reviewRows.filter((r) => r.status === 'pending' || r.status === 'rejected').length;
     base.approvedCount = base.reviewRows.filter((r) => r.status === 'approved').length;
     base.canStart = base.approvedCount >= 1;
   }
@@ -271,6 +271,10 @@ function studentView(room, player) {
       return base;
     }
     const q = player.submittedQuestionId ? getQuestion(room, player.submittedQuestionId) : null;
+    if (q && q.status === 'declined') {
+      base.step = 'declined';
+      return base;
+    }
     if (!q || q.status === 'rejected') {
       base.step = 'write';
       base.rejected = !!(q && q.status === 'rejected');
@@ -402,12 +406,24 @@ io.on('connection', (socket) => {
     broadcastAll(room);
   });
 
+  // "Send back": ask the student to revise and resubmit — not final.
   socket.on('teacher:reject', ({ code, teacherToken, questionId } = {}, cb) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
     const q = getQuestion(room, questionId);
     if (!q) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_questionNotFound') });
     q.status = 'rejected';
+    cb && cb({ ok: true });
+    broadcastAll(room);
+  });
+
+  // "Decline": final — the question is out, and the student cannot resubmit it.
+  socket.on('teacher:decline', ({ code, teacherToken, questionId } = {}, cb) => {
+    const { room, error } = requireTeacher(code, teacherToken);
+    if (error) return cb && cb({ ok: false, error });
+    const q = getQuestion(room, questionId);
+    if (!q) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_questionNotFound') });
+    q.status = 'declined';
     cb && cb({ ok: true });
     broadcastAll(room);
   });
@@ -512,6 +528,9 @@ io.on('connection', (socket) => {
     let entry = player.submittedQuestionId ? getQuestion(room, player.submittedQuestionId) : null;
     if (entry && entry.status === 'approved') {
       return cb && cb({ ok: false, error: I18N.t(room.language, 'err_alreadyApproved') });
+    }
+    if (entry && entry.status === 'declined') {
+      return cb && cb({ ok: false, error: I18N.t(room.language, 'err_alreadyDeclined') });
     }
     if (entry) {
       Object.assign(entry, clean, { status: 'pending' });

@@ -176,13 +176,15 @@
               <span class="badge badge-neutral"><span class="mi mif" style="font-size:12px">timer</span>${r.durationSec}s</span>
               <span style="font-size:12px;color:var(--muted)">${esc(r.author)}</span>
               ${r.status === 'approved' ? `<span class="badge badge-ok"><span class="mi mif" style="font-size:12px">check</span>${esc(t('approvedBadge'))}</span>` : ''}
-              ${r.status === 'rejected' ? `<span class="badge" style="background:var(--bad-tint);color:var(--bad-ink)">${esc(t('sentBackBadge'))}</span>` : ''}
+              ${r.status === 'rejected' ? `<span class="badge" style="background:var(--warn-tint);color:var(--warn-ink)">${esc(t('sentBackBadge'))}</span>` : ''}
+              ${r.status === 'declined' ? `<span class="badge" style="background:var(--bad-tint);color:var(--bad-ink)">${esc(t('declinedBadge'))}</span>` : ''}
             </div>
             <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.text)}</div>
           </div>
           <div style="display:flex;gap:7px;flex:none">
             <button class="btn btn-primary approve-btn" style="height:34px;padding:0 13px;font-size:12px" ${r.status === 'approved' ? 'disabled' : ''}><span class="mi" style="font-size:15px">check</span>${esc(t('approveBtn'))}</button>
-            <button class="btn btn-secondary reject-btn" style="height:34px;width:34px;padding:0" ${r.status === 'rejected' ? 'disabled' : ''}><span class="mi" style="font-size:17px">close</span></button>
+            <button class="btn btn-warn sendback-btn" style="height:34px;padding:0 12px;font-size:12px" ${r.status === 'rejected' ? 'disabled' : ''}><span class="mi" style="font-size:15px">undo</span>${esc(t('sendBackBtn'))}</button>
+            <button class="btn btn-danger decline-btn" style="height:34px;padding:0 12px;font-size:12px" ${r.status === 'declined' ? 'disabled' : ''}><span class="mi" style="font-size:15px">block</span>${esc(t('declineBtn'))}</button>
           </div>
         </div>`).join('') || `<div style="color:var(--muted);font-size:13px;padding:14px 0">${esc(t('noQuestionsYet'))}</div>`;
       body = `
@@ -212,7 +214,11 @@
       stage.querySelectorAll('.review-row').forEach((row) => {
         const qid = row.dataset.qid;
         row.querySelector('.approve-btn').addEventListener('click', () => socket.emit('teacher:approve', { ...session, questionId: qid }, () => {}));
-        row.querySelector('.reject-btn').addEventListener('click', () => socket.emit('teacher:reject', { ...session, questionId: qid }, () => {}));
+        row.querySelector('.sendback-btn').addEventListener('click', () => socket.emit('teacher:reject', { ...session, questionId: qid }, () => {}));
+        row.querySelector('.decline-btn').addEventListener('click', () => {
+          if (!confirm(t('declineConfirm'))) return;
+          socket.emit('teacher:decline', { ...session, questionId: qid }, () => {});
+        });
       });
       const startBtn = stage.querySelector('#startBtn');
       startBtn && startBtn.addEventListener('click', () => socket.emit('teacher:start', session, (res) => {

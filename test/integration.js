@@ -161,8 +161,9 @@ async function main() {
   check(teacherState.reviewRows.every((r) => questions.some((q) => q.durationSec === r.durationSec)), 'each question shows the duration its author chose');
 
   // A bogus duration should silently fall back to the 20s default rather
-  // than being rejected outright. Use a disposable 5th student whose
-  // question is rejected right away, so it can't disturb the play order below.
+  // than being rejected outright. Use a disposable 5th student, whose
+  // question we then decline for good, so it can't disturb the play order
+  // below — this also exercises the new permanent "decline" path.
   const spareStudent = makeStudent('Sparrow', '🐬');
   await connected(spareStudent.socket);
   const spareJoin = await emit(spareStudent.socket, 'student:join', { code: session.code, playerId: null });
@@ -174,7 +175,14 @@ async function main() {
   check(bogusDurationRes.ok, 'a non-standard duration is accepted (and normalized) rather than rejected');
   await waitUntil(() => teacherState.reviewRows && teacherState.reviewRows.some((r) => r.author === 'Sparrow' && r.durationSec === 20), { label: 'the normalized duration falls back to 20s' });
   const spareRow = teacherState.reviewRows.find((r) => r.author === 'Sparrow');
-  await emit(teacher, 'teacher:reject', { ...session, questionId: spareRow.id });
+  const declineRes = await emit(teacher, 'teacher:decline', { ...session, questionId: spareRow.id });
+  check(declineRes.ok, 'teacher declines the filler question');
+  await waitUntil(() => teacherState.reviewRows.find((r) => r.author === 'Sparrow').status === 'declined', { label: 'the filler question shows as declined to the teacher' });
+  await waitUntil(() => spareStudent.state && spareStudent.state.step === 'declined', { label: 'Sparrow sees the declined screen' });
+  const resubmitAfterDecline = await emit(spareStudent.socket, 'student:submitQuestion', {
+    code: session.code, playerId: spareJoin.playerId, question: { type: 'tf', text: 'Trying again?', tf: true },
+  });
+  check(resubmitAfterDecline.ok === false, 'a declined question cannot be resubmitted');
   spareStudent.socket.close();
 
   // ---- Reject-then-resubmit flow ---------------------------------------
