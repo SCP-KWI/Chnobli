@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Chnobli — Teacher</title>
+<title id="pageTitle">Chnobli — Lehrpult</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,18 +22,19 @@
 <body>
 <div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="badge-icon"><span class="mi" style="font-size:19px">quiz</span></span>Chnobli <small>&nbsp;· teacher console</small></div>
+    <div class="brand"><span class="badge-icon"><span class="mi" style="font-size:19px">quiz</span></span>Chnobli <small>&nbsp;· <span id="teacherConsoleLabel">Lehrpult</span></small></div>
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="chip" id="stepChip"><span class="mi mif" style="font-size:16px;color:var(--accent)">edit_square</span>Set up a new quiz</span>
-      <button class="btn btn-secondary" id="endBtn" style="display:none;height:38px;padding:0 13px;font-size:12.5px"><span class="mi" style="font-size:16px">restart_alt</span>End quiz</button>
+      <span class="chip" id="stepChip"><span class="mi mif" style="font-size:16px;color:var(--accent)">edit_square</span>Neues Quiz einrichten</span>
+      <button class="btn btn-secondary" id="endBtn" style="display:none;height:38px;padding:0 13px;font-size:12.5px"><span class="mi" style="font-size:16px">restart_alt</span><span id="endBtnText">Quiz beenden</span></button>
     </div>
   </div>
   <div id="stage-wrap"></div>
-  <div class="hint">Project this screen for the class. Students join on their own phones at <b>/play</b> or by scanning the QR code.</div>
+  <div class="hint" id="bottomHint"></div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/qrcode.min.js"></script>
+<script src="/js/i18n.js"></script>
 <script src="/js/shared.js"></script>
 <script src="/js/teacher.js"></script>
 </body>

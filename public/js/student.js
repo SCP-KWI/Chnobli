@@ -1,8 +1,20 @@
 (function () {
-  const { AVATARS, esc, typeLabel } = window.QZ;
+  const { AVATARS, esc } = window.QZ;
+  const I18N = window.I18N;
   const app = document.getElementById('app');
+  const pageTitleEl = document.getElementById('pageTitle');
   const CODE_KEY = 'chnobli:code';
   const PID_KEY = 'chnobli:playerId';
+
+  // German is the default until we know which quiz (and therefore which
+  // language, chosen by the teacher at setup) we've joined.
+  let currentLang = 'de';
+  function t(key, vars) { return I18N.t(currentLang, key, vars); }
+
+  function applyStaticText() {
+    document.documentElement.lang = currentLang;
+    pageTitleEl.textContent = t('pageTitlePlay');
+  }
 
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -26,6 +38,8 @@
   });
 
   socket.on('student:state', (view) => {
+    currentLang = I18N.normLang(view.language);
+    applyStaticText();
     const key = computeKey(view);
     if (key !== lastKey) {
       lastKey = key;
@@ -43,7 +57,7 @@
   function attemptJoin(c) {
     socket.emit('student:join', { code: c, playerId }, (res) => {
       if (!res || !res.ok) {
-        joinError = (res && res.error) || 'Could not join.';
+        joinError = (res && res.error) || t('joinErrorGeneric');
         renderJoin();
         return;
       }
@@ -68,8 +82,8 @@
 
   function lightUpdate(v) {
     if (v.step === 'play' && v.stage === 'active') {
-      const t = document.getElementById('timeLeftVal');
-      if (t) t.textContent = v.timeLeft;
+      const time = document.getElementById('timeLeftVal');
+      if (time) time.textContent = v.timeLeft;
       const a = document.getElementById('answeredVal');
       if (a) a.textContent = v.answered;
       const e = document.getElementById('expectedVal');
@@ -92,23 +106,23 @@
 
   // ---- JOIN ---------------------------------------------------------------
   function renderJoin() {
-    const digits = (code || '').padEnd(4, ' ').split('');
+    applyStaticText();
     app.innerHTML = `
       <div class="center-col" style="padding-top:12px">
         <span class="badge-icon" style="width:52px;height:52px;border-radius:16px"><span class="mi" style="font-size:28px">quiz</span></span>
-        <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em">Join a quiz</div>
-        <div style="font-size:13px;color:var(--muted)">Enter the code shown on the board</div>
+        <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em">${esc(t('joinTitle'))}</div>
+        <div style="font-size:13px;color:var(--muted)">${esc(t('joinSubtitle'))}</div>
         <input id="codeInput" inputmode="numeric" maxlength="4" value="${esc(code)}" placeholder="0000"
           style="height:64px;text-align:center;font:700 30px var(--font-mono);letter-spacing:.25em;color:var(--accent)" />
         ${joinError ? `<div style="color:var(--bad-ink);font-size:13px">${esc(joinError)}</div>` : ''}
         <div style="flex:1"></div>
-        <button class="btn btn-primary btn-block btn-lg" id="joinBtn">Join<span class="mi" style="font-size:20px">arrow_forward</span></button>
+        <button class="btn btn-primary btn-block btn-lg" id="joinBtn">${esc(t('joinBtn'))}<span class="mi" style="font-size:20px">arrow_forward</span></button>
       </div>`;
     const input = app.querySelector('#codeInput');
     input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, '').slice(0, 4); });
     function doJoin() {
       const c = input.value.replace(/\D/g, '');
-      if (c.length !== 4) { joinError = 'Enter the 4-digit code.'; renderJoin(); return; }
+      if (c.length !== 4) { joinError = t('joinErrorCode'); renderJoin(); return; }
       joinError = '';
       attemptJoin(c);
     }
@@ -122,15 +136,15 @@
     let name = v.name || '';
     app.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:16px;flex:1">
-        <div style="text-align:center"><span class="badge badge-neutral">CODE ${esc(v.code)}</span>
-          <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;margin-top:8px">Make it yours</div></div>
-        <div class="eyebrow">Pick an avatar</div>
+        <div style="text-align:center"><span class="badge badge-neutral">${esc(t('codeLabel', { code: v.code }))}</span>
+          <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;margin-top:8px">${esc(t('makeItYours'))}</div></div>
+        <div class="eyebrow">${esc(t('pickAvatar'))}</div>
         <div class="avatar-grid">${AVATARS.map((a) => `<button type="button" class="avatar-pick ${a === picked ? 'on' : ''}" data-a="${a}">${a}</button>`).join('')}</div>
-        <div><div class="eyebrow" style="margin-bottom:8px">Nickname</div>
-          <input id="nameInput" value="${esc(name)}" placeholder="e.g. Robincode" maxlength="24" style="height:48px;padding:0 14px;font-size:15px;font-weight:500" /></div>
+        <div><div class="eyebrow" style="margin-bottom:8px">${esc(t('nicknameLabel'))}</div>
+          <input id="nameInput" value="${esc(name)}" placeholder="${esc(t('nicknamePlaceholder'))}" maxlength="24" style="height:48px;padding:0 14px;font-size:15px;font-weight:500" /></div>
         <div style="flex:1"></div>
         <div id="avatarErr" style="color:var(--bad-ink);font-size:13px;display:none"></div>
-        <button class="btn btn-primary btn-block btn-lg" id="enterBtn">Enter lobby<span class="mi" style="font-size:20px">arrow_forward</span></button>
+        <button class="btn btn-primary btn-block btn-lg" id="enterBtn">${esc(t('enterLobbyBtn'))}<span class="mi" style="font-size:20px">arrow_forward</span></button>
       </div>`;
     app.querySelectorAll('.avatar-pick').forEach((btn) => btn.addEventListener('click', () => {
       picked = btn.dataset.a;
@@ -140,7 +154,7 @@
       name = app.querySelector('#nameInput').value.trim();
       if (!name) {
         const err = app.querySelector('#avatarErr');
-        err.textContent = 'Enter a nickname first.';
+        err.textContent = t('enterNicknameFirst');
         err.style.display = 'block';
         return;
       }
@@ -149,7 +163,14 @@
   }
 
   // ---- WRITE QUESTION --------------------------------------------------------
-  const TYPE_DEFS = [['mc', 'list_alt', 'Choice'], ['tf', 'balance', 'T / F'], ['short', 'short_text', 'Short'], ['guess', 'tag', 'Guess']];
+  function typeDefs() {
+    return [
+      ['mc', 'list_alt', t('type_mc_short')],
+      ['tf', 'balance', t('type_tf_short')],
+      ['short', 'short_text', t('type_short_short')],
+      ['guess', 'tag', t('type_guess_short')],
+    ];
+  }
 
   function renderWrite(v) {
     const allowed = v.allowedTypes || ['mc', 'tf', 'short', 'guess'];
@@ -170,15 +191,15 @@
     const d = writeDraft;
     app.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:12px;flex:1">
-        <div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em">Write a question</div>
-        ${v.rejected ? '<div class="badge" style="background:var(--warn-tint);color:var(--warn-ink);width:fit-content"><span class="mi mif" style="font-size:14px">undo</span>Your teacher asked you to revise this</div>' : ''}
-        <div class="type-row">${TYPE_DEFS.filter((t) => allowed.includes(t[0])).map(([t, icon, label]) => `
-          <button type="button" class="type-chip ${d.type === t ? 'on' : ''}" data-type="${t}"><span class="mi mif" style="font-size:18px">${icon}</span>${label}</button>`).join('')}</div>
-        <textarea id="qText" rows="2" placeholder="Type your question…" style="padding:10px 12px;font-size:14px;font-weight:500;resize:none">${esc(d.text)}</textarea>
+        <div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em">${esc(t('writeQuestionTitle'))}</div>
+        ${v.rejected ? `<div class="badge" style="background:var(--warn-tint);color:var(--warn-ink);width:fit-content"><span class="mi mif" style="font-size:14px">undo</span>${esc(t('rejectedBanner'))}</div>` : ''}
+        <div class="type-row">${typeDefs().filter((tt) => allowed.includes(tt[0])).map(([type, icon, label]) => `
+          <button type="button" class="type-chip ${d.type === type ? 'on' : ''}" data-type="${type}"><span class="mi mif" style="font-size:18px">${icon}</span>${esc(label)}</button>`).join('')}</div>
+        <textarea id="qText" rows="2" placeholder="${esc(t('questionPlaceholder'))}" style="padding:10px 12px;font-size:14px;font-weight:500;resize:none">${esc(d.text)}</textarea>
         <div id="typeFields"></div>
         <div style="flex:1"></div>
         <div id="writeErr" style="color:var(--bad-ink);font-size:13px;display:none"></div>
-        <button class="btn btn-primary btn-block btn-lg" id="submitQBtn">Submit for review<span class="mi" style="font-size:20px">arrow_forward</span></button>
+        <button class="btn btn-primary btn-block btn-lg" id="submitQBtn">${esc(t('submitForReviewBtn'))}<span class="mi" style="font-size:20px">arrow_forward</span></button>
       </div>`;
     app.querySelector('#qText').addEventListener('input', (e) => { d.text = e.target.value; });
     app.querySelectorAll('.type-chip').forEach((btn) => btn.addEventListener('click', () => {
@@ -196,31 +217,31 @@
           ${d.options.map((val, i) => `
             <div class="opt-row ${i === d.correctIndex ? 'correct' : ''}" data-i="${i}">
               <span style="width:13px;height:13px;border-radius:3px;background:var(--accent);flex:none;opacity:${i === d.correctIndex ? 1 : .25}"></span>
-              <input value="${esc(val)}" placeholder="Option ${i + 1}" data-opt="${i}" />
+              <input value="${esc(val)}" placeholder="${esc(t('optionPlaceholder', { n: i + 1 }))}" data-opt="${i}" />
               <button type="button" class="pick-correct" data-i="${i}"><span class="mi ${i === d.correctIndex ? 'mif' : ''}" style="font-size:20px;color:${i === d.correctIndex ? 'var(--accent)' : 'var(--faint)'}">${i === d.correctIndex ? 'check_circle' : 'radio_button_unchecked'}</span></button>
             </div>`).join('')}
-          <div style="font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px"><span class="mi mif" style="font-size:14px;color:var(--accent)">check_circle</span>Tap the circle to mark the correct answer</div>
+          <div style="font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px"><span class="mi mif" style="font-size:14px;color:var(--accent)">check_circle</span>${esc(t('tapCorrectHint'))}</div>
         </div>`;
         box.querySelectorAll('input[data-opt]').forEach((inp) => inp.addEventListener('input', (e) => { d.options[+inp.dataset.opt] = e.target.value; }));
         box.querySelectorAll('.pick-correct').forEach((btn) => btn.addEventListener('click', () => { d.correctIndex = +btn.dataset.i; paintTypeFields(); }));
       } else if (d.type === 'tf') {
-        box.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px"><div class="eyebrow">The statement is…</div>
+        box.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px"><div class="eyebrow">${esc(t('statementIs'))}</div>
           <div style="display:flex;gap:8px">
-            <button type="button" class="type-chip ${d.tf ? 'on' : ''}" id="tfTrue" style="flex:1;height:44px">True</button>
-            <button type="button" class="type-chip ${!d.tf ? 'on' : ''}" id="tfFalse" style="flex:1;height:44px">False</button>
+            <button type="button" class="type-chip ${d.tf ? 'on' : ''}" id="tfTrue" style="flex:1;height:44px">${esc(t('trueLabel'))}</button>
+            <button type="button" class="type-chip ${!d.tf ? 'on' : ''}" id="tfFalse" style="flex:1;height:44px">${esc(t('falseLabel'))}</button>
           </div></div>`;
         box.querySelector('#tfTrue').addEventListener('click', () => { d.tf = true; paintTypeFields(); });
         box.querySelector('#tfFalse').addEventListener('click', () => { d.tf = false; paintTypeFields(); });
       } else if (d.type === 'short') {
-        box.innerHTML = `<div><div class="eyebrow" style="margin-bottom:6px">Accepted answer</div>
-          <input id="shortAns" value="${esc(d.answer)}" placeholder="e.g. Mitochondrion" style="height:44px;padding:0 12px;font-size:14px" /></div>`;
+        box.innerHTML = `<div><div class="eyebrow" style="margin-bottom:6px">${esc(t('acceptedAnswerLabel'))}</div>
+          <input id="shortAns" value="${esc(d.answer)}" placeholder="${esc(t('acceptedAnswerPlaceholder'))}" style="height:44px;padding:0 12px;font-size:14px" /></div>`;
         box.querySelector('#shortAns').addEventListener('input', (e) => { d.answer = e.target.value; });
       } else {
         box.innerHTML = `<div style="display:flex;gap:10px">
-          <div style="flex:1"><div class="eyebrow" style="margin-bottom:6px">Correct number</div>
+          <div style="flex:1"><div class="eyebrow" style="margin-bottom:6px">${esc(t('correctNumberLabel'))}</div>
             <input id="numAns" inputmode="decimal" value="${esc(d.num)}" placeholder="0" style="height:48px;padding:0 14px;font:600 20px var(--font-mono)" /></div>
-          <div style="flex:1"><div class="eyebrow" style="margin-bottom:6px">Unit (optional)</div>
-            <input id="unitAns" value="${esc(d.unit)}" placeholder="e.g. bones" style="height:48px;padding:0 14px;font-size:14px" /></div>
+          <div style="flex:1"><div class="eyebrow" style="margin-bottom:6px">${esc(t('unitLabel'))}</div>
+            <input id="unitAns" value="${esc(d.unit)}" placeholder="${esc(t('unitPlaceholder'))}" style="height:48px;padding:0 14px;font-size:14px" /></div>
         </div>`;
         box.querySelector('#numAns').addEventListener('input', (e) => { d.num = e.target.value; });
         box.querySelector('#unitAns').addEventListener('input', (e) => { d.unit = e.target.value; });
@@ -238,7 +259,7 @@
     socket.emit('student:submitQuestion', { code, playerId, question }, (res) => {
       if (!res || !res.ok) {
         const err = app.querySelector('#writeErr');
-        if (err) { err.textContent = (res && res.error) || 'Could not submit.'; err.style.display = 'block'; }
+        if (err) { err.textContent = (res && res.error) || t('submitErrorGeneric'); err.style.display = 'block'; }
       }
     });
   }
@@ -247,9 +268,9 @@
   function renderSubmitted() {
     app.innerHTML = `<div class="center-col">
       <span style="width:70px;height:70px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow-lg);animation:pop .4s ease-out"><span class="mi mif" style="font-size:40px">check</span></span>
-      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">Question submitted!</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">Waiting for your teacher to review and start the quiz…</div>
-      <span class="badge badge-neutral">YOU'LL PLAY WHEN IT STARTS</span>
+      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">${esc(t('submittedTitle'))}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">${esc(t('submittedBody'))}</div>
+      <span class="badge badge-neutral">${esc(t('submittedBadge'))}</span>
     </div>`;
   }
 
@@ -257,9 +278,9 @@
   function renderLocked(v) {
     app.innerHTML = `<div class="center-col">
       <span style="width:74px;height:74px;border-radius:50%;background:var(--accent-tint);color:var(--accent-ink);display:grid;place-items:center;font-size:36px">👀</span>
-      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">This one's yours!</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">You wrote this question, so you're sitting it out — no points this round.</div>
-      <span class="chip"><span class="mi mif" style="font-size:16px;color:var(--accent)">group</span><span class="mono" style="font:600 12.5px var(--font-mono)"><span id="answeredVal">${v.answered}</span> / <span id="expectedVal">${v.expected}</span> answering…</span></span>
+      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">${esc(t('lockedTitle'))}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;max-width:230px">${esc(t('lockedBody'))}</div>
+      <span class="chip"><span class="mi mif" style="font-size:16px;color:var(--accent)">group</span><span class="mono" style="font:600 12.5px var(--font-mono)">${t('answeringCount', { n: `<span id="answeredVal">${v.answered}</span>`, m: `<span id="expectedVal">${v.expected}</span>` })}</span></span>
     </div>`;
   }
 
@@ -267,9 +288,9 @@
   function renderWaiting(v) {
     app.innerHTML = `<div class="center-col">
       <span style="width:64px;height:64px;border-radius:50%;background:var(--accent-tint);color:var(--accent-ink);display:grid;place-items:center;animation:pop .4s ease-out"><span class="mi mif" style="font-size:34px">lock</span></span>
-      <div style="font:700 18px 'Source Sans 3';letter-spacing:-.01em">Locked in!</div>
-      <div style="font-size:13px;color:var(--muted)">Waiting for everyone else…</div>
-      <span class="badge badge-neutral"><span id="answeredVal">${v.answered}</span> / <span id="expectedVal">${v.expected}</span> ANSWERED</span>
+      <div style="font:700 18px 'Source Sans 3';letter-spacing:-.01em">${esc(t('lockedInTitle'))}</div>
+      <div style="font-size:13px;color:var(--muted)">${esc(t('waitingOthers'))}</div>
+      <span class="badge badge-neutral">${t('answeredBadge', { n: `<span id="answeredVal">${v.answered}</span>`, m: `<span id="expectedVal">${v.expected}</span>` })}</span>
     </div>`;
   }
 
@@ -281,7 +302,7 @@
     </div>`;
     let body;
     if (v.ansChoice) {
-      body = `<div style="text-align:center;font-size:12.5px;color:var(--muted);font-weight:500">Read the board · tap your answer</div>
+      body = `<div style="text-align:center;font-size:12.5px;color:var(--muted);font-weight:500">${esc(t('readBoardHint'))}</div>
         <div class="tile-grid" style="flex:1">${v.qOptions.map((o, idx) => `
           <button type="button" class="answer-tile" style="background:var(${o.colorVar});animation-delay:${idx * 60}ms" data-i="${o.i}">
             <span class="letter">${o.letter}</span><span>${esc(o.label)}</span>
@@ -291,13 +312,13 @@
         <div style="text-align:center;font-size:14px;color:var(--muted)">${esc(v.qText)}</div>
         <input id="guessInput" inputmode="decimal" placeholder="0" style="height:64px;text-align:center;font:600 30px var(--font-mono)" />
         <div style="text-align:center;font-size:12px;color:var(--faint)">${esc(v.unit || '')}</div>
-        <button class="btn btn-primary btn-block" id="lockBtn">Lock in guess</button>
+        <button class="btn btn-primary btn-block" id="lockBtn">${esc(t('lockInGuessBtn'))}</button>
       </div>`;
     } else {
       body = `<div style="flex:1;display:flex;flex-direction:column;gap:12px;justify-content:center">
         <div style="text-align:center;font-size:14px;color:var(--muted)">${esc(v.qText)}</div>
-        <input id="shortInput" placeholder="Type your answer" style="height:52px;text-align:center;font-size:16px;font-weight:500" />
-        <button class="btn btn-primary btn-block" id="lockBtn">Submit answer</button>
+        <input id="shortInput" placeholder="${esc(t('typeYourAnswerPlaceholder'))}" style="height:52px;text-align:center;font-size:16px;font-weight:500" />
+        <button class="btn btn-primary btn-block" id="lockBtn">${esc(t('submitAnswerBtn'))}</button>
       </div>`;
     }
     app.innerHTML = `<div style="display:flex;flex-direction:column;gap:13px;flex:1">${head}${body}</div>`;
@@ -335,22 +356,22 @@
     let inner = '';
     if (v.result === 'locked') {
       inner = `<span style="width:64px;height:64px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;font-size:32px">👀</span>
-        <div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em;color:var(--muted)">You sat this one out</div>
-        <div style="font-size:13px;color:var(--faint)">It was your question — no points, but nice writing!</div>`;
+        <div style="font:700 19px 'Source Sans 3';letter-spacing:-.01em;color:var(--muted)">${esc(t('satOutTitle'))}</div>
+        <div style="font-size:13px;color:var(--faint)">${esc(t('satOutBody'))}</div>`;
     } else if (v.result === 'correct') {
       inner = `<span style="width:68px;height:68px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow-lg);animation:pop .5s ease-out"><span class="mi mif" style="font-size:38px">check</span></span>
-        <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em;color:var(--ok-ink)">Correct!</div>
+        <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em;color:var(--ok-ink)">${esc(t('correctTitle'))}</div>
         <div style="font:600 44px/1 var(--font-mono)">+${v.points}</div>
         <div style="display:flex;gap:8px">
-          ${v.streak > 1 ? `<span class="badge" style="background:var(--warn-tint);color:var(--warn-ink);font-family:'Source Sans 3'"><span style="display:inline-block;animation:flame 1s ease-in-out infinite">🔥</span> ${v.streak} streak</span>` : ''}
-          <span class="badge" style="background:var(--accent-tint);color:var(--accent-ink);font-family:'Source Sans 3'">${esc(v.rankText)} place</span>
+          ${v.streak > 1 ? `<span class="badge" style="background:var(--warn-tint);color:var(--warn-ink);font-family:'Source Sans 3'"><span style="display:inline-block;animation:flame 1s ease-in-out infinite">🔥</span> ${esc(t('streakBadge', { n: v.streak }))}</span>` : ''}
+          <span class="badge" style="background:var(--accent-tint);color:var(--accent-ink);font-family:'Source Sans 3'">${esc(t('placeBadge', { rank: v.rankText }))}</span>
         </div>`;
     } else {
-      const label = v.result === 'missed' ? "Time's up" : 'Not this time';
+      const label = v.result === 'missed' ? t('timesUpTitle') : t('notThisTimeTitle');
       inner = `<span style="width:68px;height:68px;border-radius:50%;background:var(--bad);color:#fff;display:grid;place-items:center;animation:pop .5s ease-out"><span class="mi mif" style="font-size:38px">close</span></span>
-        <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;color:var(--bad-ink)">${label}</div>
-        <div style="font-size:13px;color:var(--muted)">Answer: <b style="color:var(--ink)">${esc(v.correctText)}</b></div>
-        <div style="font-size:12.5px;color:var(--faint)">Streak reset · still ${esc(v.rankText)} place</div>`;
+        <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;color:var(--bad-ink)">${esc(label)}</div>
+        <div style="font-size:13px;color:var(--muted)">${esc(t('answerLabel'))}: <b style="color:var(--ink)">${esc(v.correctText)}</b></div>
+        <div style="font-size:12.5px;color:var(--faint)">${esc(t('streakResetStill', { rank: v.rankText }))}</div>`;
     }
     app.innerHTML = `<div class="center-col">${inner}</div>`;
   }
@@ -358,22 +379,22 @@
   // ---- SCORES ------------------------------------------------------------------
   function renderScores(v) {
     app.innerHTML = `<div class="center-col">
-      <div class="eyebrow">Your standing</div>
+      <div class="eyebrow">${esc(t('yourStanding'))}</div>
       <div style="font:700 52px/1 var(--font-mono);color:var(--accent-ink)">${esc(v.rankText)}</div>
-      <div style="font-size:14px;color:var(--muted)"><b class="mono" style="color:var(--ink)">${v.score}</b> points</div>
-      <div style="font-size:12.5px;color:var(--faint);display:flex;align-items:center;gap:5px"><span class="mi" style="font-size:16px">tv</span>Watch the board for the standings</div>
+      <div style="font-size:14px;color:var(--muted)"><b class="mono" style="color:var(--ink)">${v.score}</b> ${esc(t('pointsLabel'))}</div>
+      <div style="font-size:12.5px;color:var(--faint);display:flex;align-items:center;gap:5px"><span class="mi" style="font-size:16px">tv</span>${esc(t('watchBoardHint'))}</div>
     </div>`;
   }
 
   // ---- PODIUM ------------------------------------------------------------------
   function renderPodium(v) {
     const emoji = v.rank === 1 ? '🏆' : (v.rank <= 3 ? '🥳' : '👏');
-    const note = v.rank === 1 ? 'you won!' : (v.rank <= 3 ? 'on the podium!' : 'good game!');
+    const note = v.rank === 1 ? t('youWon') : (v.rank <= 3 ? t('onPodium') : t('goodGame'));
     app.innerHTML = `<div class="center-col">
       <span style="font-size:44px">${emoji}</span>
-      <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em">You finished ${esc(v.rankText)}!</div>
-      <div style="font-size:14px;color:var(--muted)"><b class="mono" style="color:var(--ink)">${v.score}</b> points · ${note}</div>
-      <button class="btn btn-secondary" id="doneBtn" style="margin-top:8px">Back to join screen</button>
+      <div style="font:700 22px 'Source Sans 3';letter-spacing:-.01em">${esc(t('finishedRank', { rank: v.rankText }))}</div>
+      <div style="font-size:14px;color:var(--muted)"><b class="mono" style="color:var(--ink)">${v.score}</b> ${esc(t('pointsLabel'))} · ${esc(note)}</div>
+      <button class="btn btn-secondary" id="doneBtn" style="margin-top:8px">${esc(t('backToJoinBtn'))}</button>
     </div>`;
     app.querySelector('#doneBtn').addEventListener('click', () => { localStorage.removeItem(CODE_KEY); location.href = '/play'; });
   }
@@ -382,12 +403,13 @@
   function renderEnded() {
     app.innerHTML = `<div class="center-col">
       <span class="mi" style="font-size:44px;color:var(--muted)">event_busy</span>
-      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">This quiz has ended</div>
-      <div style="font-size:13px;color:var(--muted)">Ask your teacher for a new code to join the next one.</div>
-      <button class="btn btn-primary" id="backBtn">Join another quiz</button>
+      <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em">${esc(t('quizEndedTitle'))}</div>
+      <div style="font-size:13px;color:var(--muted)">${esc(t('quizEndedBody'))}</div>
+      <button class="btn btn-primary" id="backBtn">${esc(t('joinAnotherBtn'))}</button>
     </div>`;
     app.querySelector('#backBtn').addEventListener('click', () => { localStorage.removeItem(CODE_KEY); location.href = '/play'; });
   }
 
+  applyStaticText();
   if (!code) renderJoin();
 })();

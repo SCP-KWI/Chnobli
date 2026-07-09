@@ -4,6 +4,7 @@
 'use strict';
 
 const { randomCode, randomToken, newId, QUESTION_TYPES } = require('./game');
+const I18N = require('../public/js/i18n.js');
 
 const STALE_MS = 1000 * 60 * 60 * 4; // rooms older than 4h auto-swept
 
@@ -21,13 +22,16 @@ class RoomManager {
     }
   }
 
-  create(title, allowedTypes) {
+  create(title, allowedTypes, language) {
     const code = randomCode(this.rooms);
+    const lang = I18N.normLang(language);
     const types = (Array.isArray(allowedTypes) ? allowedTypes : QUESTION_TYPES)
       .filter((t) => QUESTION_TYPES.includes(t));
+    const defaultTitle = I18N.t(lang, 'defaultQuizTitle');
     const room = {
       code,
-      title: String(title || 'Untitled quiz').trim().slice(0, 80) || 'Untitled quiz',
+      title: String(title || defaultTitle).trim().slice(0, 80) || defaultTitle,
+      language: lang,
       allowedTypes: types.length ? types : QUESTION_TYPES.slice(),
       teacherToken: randomToken(),
       teacherSocketIds: new Set(),

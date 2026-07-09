@@ -2,6 +2,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const I18N = require('../public/js/i18n.js');
 
 const QUESTION_TYPES = ['mc', 'tf', 'short', 'guess'];
 const AVATARS = ['🦊', '🦉', '🐙', '🦋', '🐬', '🦄', '🐝', '🐧'];
@@ -25,20 +26,23 @@ function randomToken() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-function ordinal(n) {
+/** German just uses "1.", "2.", …; English keeps the st/nd/rd/th suffixes. */
+function ordinal(n, lang) {
+  if (I18N.normLang(lang) === 'de') return `${n}.`;
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 /** Validate + normalize a student-authored question. Returns {ok, question, error}. */
-function sanitizeQuestion(raw, allowedTypes) {
-  if (!raw || typeof raw !== 'object') return { ok: false, error: 'No question data.' };
+function sanitizeQuestion(raw, allowedTypes, lang) {
+  const err = (key) => ({ ok: false, error: I18N.t(lang, key) });
+  if (!raw || typeof raw !== 'object') return err('err_noQuestionData');
   const type = raw.type;
-  if (!QUESTION_TYPES.includes(type)) return { ok: false, error: 'Unknown question type.' };
-  if (allowedTypes && !allowedTypes.includes(type)) return { ok: false, error: 'That question type is not enabled for this quiz.' };
+  if (!QUESTION_TYPES.includes(type)) return err('err_unknownType');
+  if (allowedTypes && !allowedTypes.includes(type)) return err('err_typeNotEnabled');
   const text = String(raw.text || '').trim().slice(0, 240);
-  if (!text) return { ok: false, error: 'Write a question first.' };
+  if (!text) return err('err_writeQuestionFirst');
 
   if (type === 'mc') {
     const options = (Array.isArray(raw.options) ? raw.options : [])
@@ -46,7 +50,7 @@ function sanitizeQuestion(raw, allowedTypes) {
       .slice(0, 4);
     while (options.length < 4) options.push('');
     const filled = options.filter((o) => o.length > 0);
-    if (filled.length < 2) return { ok: false, error: 'Add at least two answer options.' };
+    if (filled.length < 2) return err('err_needTwoOptions');
     let correctIndex = Number.isInteger(raw.correctIndex) ? raw.correctIndex : 0;
     if (correctIndex < 0 || correctIndex >= options.length || !options[correctIndex]) {
       correctIndex = options.findIndex((o) => o.length > 0);
@@ -59,16 +63,16 @@ function sanitizeQuestion(raw, allowedTypes) {
   }
   if (type === 'short') {
     const answer = String(raw.answer || '').trim().slice(0, 80);
-    if (!answer) return { ok: false, error: 'Add the accepted answer.' };
+    if (!answer) return err('err_addAcceptedAnswer');
     return { ok: true, question: { type, text, answer } };
   }
   if (type === 'guess') {
     const num = parseFloat(raw.num);
-    if (!Number.isFinite(num)) return { ok: false, error: 'Add the correct number.' };
+    if (!Number.isFinite(num)) return err('err_addCorrectNumber');
     const unit = String(raw.unit || '').trim().slice(0, 24);
     return { ok: true, question: { type, text, num, unit } };
   }
-  return { ok: false, error: 'Unknown question type.' };
+  return err('err_unknownType');
 }
 
 /** Check whether a submitted answer value is correct for a question. */

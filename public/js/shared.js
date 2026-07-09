@@ -8,13 +8,6 @@
     }[c]));
   }
 
-  function typeLabel(t) {
-    return { mc: 'Multiple choice', tf: 'True / False', short: 'Short answer', guess: 'Guess the number' }[t] || t;
-  }
-  function typeIcon(t) {
-    return { mc: 'list_alt', tf: 'balance', short: 'short_text', guess: 'tag' }[t] || 'quiz';
-  }
-
   function confettiHTML(n) {
     const cols = ['var(--quizzes)', 'var(--names)', 'var(--grades)', 'var(--observations)', 'var(--warn)'];
     let html = '';
@@ -34,9 +27,5 @@
     return new URLSearchParams(location.search).get(name);
   }
 
-  function storageKey(k) {
-    return `chnobli:${k}`;
-  }
-
-  global.QZ = { AVATARS, esc, typeLabel, typeIcon, confettiHTML, qs, storageKey };
+  global.QZ = { AVATARS, esc, confettiHTML, qs };
 })(window);

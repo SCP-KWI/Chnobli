@@ -86,9 +86,43 @@ async function main() {
   let teacherState = null;
   teacher.on('teacher:state', (v) => { teacherState = v; });
   await connected(teacher);
-  const created = await emit(teacher, 'teacher:create', { title: 'Integration Test Quiz', types: ['mc', 'tf', 'short', 'guess'] });
+
+  // German is the default language when none is specified at creation.
+  const defaultLangQuiz = await emit(teacher, 'teacher:create', { title: 'Default language check' });
+  await waitUntil(() => teacherState && teacherState.code === defaultLangQuiz.code && teacherState.language, { label: 'default-language quiz reports its language' });
+  check(teacherState.language === 'de', 'quizzes default to German when no language is specified');
+
+  // A student in that German-language quiz should get German validation text.
+  const deStudent = makeStudent('Testkind', '🦊');
+  await connected(deStudent.socket);
+  const deJoin = await emit(deStudent.socket, 'student:join', { code: defaultLangQuiz.code, playerId: null });
+  await emit(deStudent.socket, 'student:setProfile', { code: defaultLangQuiz.code, playerId: deJoin.playerId, name: 'Testkind', avatar: '🦊' });
+  const deBadQuestion = await emit(deStudent.socket, 'student:submitQuestion', { code: defaultLangQuiz.code, playerId: deJoin.playerId, question: { type: 'mc', text: '' } });
+  check(deBadQuestion.ok === false && deBadQuestion.error === 'Schreib zuerst eine Frage.', 'validation errors in a German quiz come back in German');
+
+  // True/False labels and ordinals should render in German too, all the way
+  // through a live question (this student is the only player, so the
+  // question auto-reveals once nobody else is left to answer it).
+  const deTF = await emit(deStudent.socket, 'student:submitQuestion', { code: defaultLangQuiz.code, playerId: deJoin.playerId, question: { type: 'tf', text: 'Wasser kocht bei 100°C.', tf: true } });
+  check(deTF.ok, 'German student submits a true/false question');
+  await emit(teacher, 'teacher:openReview', { code: defaultLangQuiz.code, teacherToken: defaultLangQuiz.teacherToken });
+  await waitUntil(() => teacherState.code === defaultLangQuiz.code && teacherState.reviewRows && teacherState.reviewRows.length === 1, { label: 'German quiz shows the submitted question for review' });
+  check(teacherState.reviewRows[0].typeLabel === 'WAHR / FALSCH', 'question type labels are translated in the German review list');
+  await emit(teacher, 'teacher:approve', { code: defaultLangQuiz.code, teacherToken: defaultLangQuiz.teacherToken, questionId: teacherState.reviewRows[0].id });
+  await emit(teacher, 'teacher:start', { code: defaultLangQuiz.code, teacherToken: defaultLangQuiz.teacherToken });
+  await waitUntil(() => teacherState.code === defaultLangQuiz.code && teacherState.phase === 'play', { label: 'German quiz question goes live' });
+  check(teacherState.qOptions.map((o) => o.label).join('/') === 'Wahr/Falsch', 'True/False tiles are labeled in German during play');
+  await waitUntil(() => teacherState.code === defaultLangQuiz.code && teacherState.stage === 'reveal', { timeout: 3000, label: 'German quiz auto-reveals with a lone player' });
+  check(teacherState.correctText === 'Wahr', 'the correct-answer text is translated in German');
+  await emit(teacher, 'teacher:endQuiz', { code: defaultLangQuiz.code, teacherToken: defaultLangQuiz.teacherToken });
+  deStudent.socket.close();
+
+  // This test drives the rest of the flow in English, purely so its own
+  // assertions can check exact server-error text below.
+  const created = await emit(teacher, 'teacher:create', { title: 'Integration Test Quiz', types: ['mc', 'tf', 'short', 'guess'], language: 'en' });
   check(created.ok && /^\d{4}$/.test(created.code), 'teacher creates a quiz and gets a 4-digit code');
   const session = { code: created.code, teacherToken: created.teacherToken };
+  await waitUntil(() => teacherState && teacherState.code === created.code && teacherState.language === 'en', { label: 'quiz honors the requested English language' });
 
   // wrong-token control should be rejected
   const bad = await emit(teacher, 'teacher:approve', { code: session.code, teacherToken: 'nope', questionId: 'x' });

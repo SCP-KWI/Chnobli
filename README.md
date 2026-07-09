@@ -15,6 +15,17 @@ system, slate-blue accent, letter-badge answers), not a Kahoot skin.
   the number), then play every question except their own — they sit that
   one out while the rest of the class answers it.
 
+## Language
+
+German is the default everywhere. The teacher's quiz setup screen has a
+Deutsch/English toggle; whichever one is selected when the quiz is created
+becomes that quiz's language for the teacher's own screen *and* every
+student who joins it (there's no separate toggle for students — they
+inherit the teacher's choice). All UI text and server-sent messages (errors,
+question-type labels, True/False, ordinals like "1." vs "1st") come from
+the single dictionary in `public/js/i18n.js`, shared by both the browser and
+the server so there's one place to add a string or a third language later.
+
 ## Run locally
 
 ```bash

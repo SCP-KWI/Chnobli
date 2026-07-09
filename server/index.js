@@ -10,6 +10,7 @@ const {
   AVATARS, QUESTION_DURATION_MS, newId, ordinal,
   sanitizeQuestion, checkAnswer, pointsFor, rankMap,
 } = require('./game');
+const I18N = require('../public/js/i18n.js');
 
 const PORT = process.env.PORT || 3000;
 
@@ -35,12 +36,13 @@ const OPTION_STYLES = [
   { letter: 'D', var: '--observations' },
 ];
 const TF_STYLES = [
-  { letter: 'T', var: '--quizzes', label: 'True' },
-  { letter: 'F', var: '--names', label: 'False' },
+  { letter: 'T', var: '--quizzes' },
+  { letter: 'F', var: '--names' },
 ];
+const TYPE_LABEL_KEY = { mc: 'type_mc', tf: 'type_tf', short: 'type_short', guess: 'type_guess' };
 
-function typeLabel(t) {
-  return { mc: 'Multiple choice', tf: 'True / False', short: 'Short answer', guess: 'Guess the number' }[t] || t;
+function typeLabel(t, lang) {
+  return I18N.t(lang, TYPE_LABEL_KEY[t] || 'type_mc');
 }
 
 function getQuestion(room, id) {
@@ -118,7 +120,7 @@ function revealQuestion(room) {
 function reviewRows(room) {
   return room.questions.map((q) => ({
     id: q.id,
-    typeLabel: typeLabel(q.type).toUpperCase(),
+    typeLabel: typeLabel(q.type, room.language).toUpperCase(),
     type: q.type,
     text: q.text,
     author: q.authorName,
@@ -134,13 +136,15 @@ function scoreBoard(room, prevRank) {
     const prev = (prevRank && prevRank[p.id]) || i + 1;
     const delta = prev - (i + 1);
     return {
-      id: p.id, rank: i + 1, name: p.name || 'Player', avatar: p.avatar || '🙂', score: p.score,
+      id: p.id, rank: i + 1, name: p.name || I18N.t(room.language, 'playerFallback'), avatar: p.avatar || '🙂', score: p.score,
       delta, deltaIcon: delta > 0 ? 'arrow_upward' : (delta < 0 ? 'arrow_downward' : 'remove'),
     };
   });
 }
 
 function questionPlayData(room, q) {
+  const lang = room.language;
+  const tfLabels = [I18N.t(lang, 'trueLabel'), I18N.t(lang, 'falseLabel')];
   const ansChoice = q.type === 'mc' || q.type === 'tf';
   let qOptions = [];
   if (q.type === 'mc') {
@@ -149,14 +153,14 @@ function questionPlayData(room, q) {
       .filter((o) => o.label)
       .map((o, idx) => ({ label: o.label, i: o.i, letter: OPTION_STYLES[idx].letter, colorVar: OPTION_STYLES[idx].var }));
   } else if (q.type === 'tf') {
-    qOptions = TF_STYLES.map((s, i) => ({ label: s.label, i, letter: s.letter, colorVar: s.var }));
+    qOptions = TF_STYLES.map((s, i) => ({ label: tfLabels[i], i, letter: s.letter, colorVar: s.var }));
   }
   let correctText = '';
   let dist = [];
   if (q.type === 'mc') {
     correctText = q.options[q.correctIndex];
   } else if (q.type === 'tf') {
-    correctText = q.tf ? 'True' : 'False';
+    correctText = q.tf ? tfLabels[0] : tfLabels[1];
   } else if (q.type === 'guess') {
     correctText = String(q.num) + (q.unit ? ` ${q.unit}` : '');
   } else {
@@ -166,6 +170,8 @@ function questionPlayData(room, q) {
 }
 
 function distribution(room, q) {
+  const lang = room.language;
+  const tfLabels = [I18N.t(lang, 'trueLabel'), I18N.t(lang, 'falseLabel')];
   const answers = [...(room.current ? room.current.answers.values() : [])];
   const exp = Math.max(1, expectedAnswerers(room));
   if (q.type === 'mc') {
@@ -181,7 +187,7 @@ function distribution(room, q) {
       const boolVal = i === 0;
       const count = answers.filter((a) => a.rawValue === boolVal).length;
       const isCorrect = boolVal === q.tf;
-      return { label: s.label, count, isCorrect, pct: Math.round((100 * count) / exp) };
+      return { label: tfLabels[i], count, isCorrect, pct: Math.round((100 * count) / exp) };
     });
   }
   return [];
@@ -191,6 +197,7 @@ function teacherView(room) {
   const base = {
     code: room.code,
     title: room.title,
+    language: room.language,
     allowedTypes: room.allowedTypes,
     phase: room.phase,
     players: [...room.players.values()].map((p) => ({
@@ -234,7 +241,7 @@ function teacherView(room) {
     }
     if (stage === 'reveal' || stage === 'scores') {
       base.board = scoreBoard(room, room.current.prevRank);
-      base.nextLabel = room.currentIndex + 1 < room.playOrder.length ? 'Next question' : 'Final results';
+      base.nextLabel = I18N.t(room.language, room.currentIndex + 1 < room.playOrder.length ? 'nextQuestionBtn' : 'finalResultsBtn');
     }
   }
 
@@ -249,7 +256,7 @@ function teacherView(room) {
 
 function studentView(room, player) {
   const base = {
-    code: room.code, title: room.title,
+    code: room.code, title: room.title, language: room.language,
     playerId: player.id, name: player.name, avatar: player.avatar, score: player.score, streak: player.streak,
     allowedTypes: room.allowedTypes,
   };
@@ -291,7 +298,7 @@ function studentView(room, player) {
       const board = scoreBoard(room, room.current.prevRank);
       const mineRank = board.find((r) => r.id === player.id);
       base.rank = mineRank ? mineRank.rank : board.length;
-      base.rankText = ordinal(base.rank);
+      base.rankText = ordinal(base.rank, room.language);
     }
     if (stage === 'reveal') {
       if (isUser) {
@@ -312,7 +319,7 @@ function studentView(room, player) {
     const mineRank = board.find((r) => r.id === player.id);
     base.step = 'podium';
     base.rank = mineRank ? mineRank.rank : board.length;
-    base.rankText = ordinal(base.rank);
+    base.rankText = ordinal(base.rank, room.language);
     return base;
   }
 
@@ -346,14 +353,14 @@ io.on('connection', (socket) => {
 
   function requireTeacher(code, teacherToken) {
     const room = manager.get(code);
-    if (!room) return { error: 'Quiz not found.' };
-    if (room.teacherToken !== teacherToken) return { error: 'Not authorized.' };
+    if (!room) return { error: I18N.t(I18N.DEFAULT_LANG, 'err_quizNotFound') };
+    if (room.teacherToken !== teacherToken) return { error: I18N.t(room.language, 'err_notAuthorized') };
     return { room };
   }
 
   // ---- teacher ----
-  socket.on('teacher:create', ({ title, types } = {}, cb) => {
-    const room = manager.create(title, types);
+  socket.on('teacher:create', ({ title, types, language } = {}, cb) => {
+    const room = manager.create(title, types, language);
     room.teacherSocketIds.add(socket.id);
     socket.data.role = 'teacher';
     socket.data.code = room.code;
@@ -385,7 +392,7 @@ io.on('connection', (socket) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
     const q = getQuestion(room, questionId);
-    if (!q) return cb && cb({ ok: false, error: 'Question not found.' });
+    if (!q) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_questionNotFound') });
     q.status = 'approved';
     cb && cb({ ok: true });
     broadcastAll(room);
@@ -395,7 +402,7 @@ io.on('connection', (socket) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
     const q = getQuestion(room, questionId);
-    if (!q) return cb && cb({ ok: false, error: 'Question not found.' });
+    if (!q) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_questionNotFound') });
     q.status = 'rejected';
     cb && cb({ ok: true });
     broadcastAll(room);
@@ -405,7 +412,7 @@ io.on('connection', (socket) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
     const approved = room.questions.filter((q) => q.status === 'approved');
-    if (!approved.length) return cb && cb({ ok: false, error: 'Approve at least one question first.' });
+    if (!approved.length) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_approveAtLeastOne') });
     room.playOrder = approved.map((q) => q.id);
     room.currentIndex = 0;
     room.phase = 'play';
@@ -423,7 +430,7 @@ io.on('connection', (socket) => {
   socket.on('teacher:showScores', ({ code, teacherToken } = {}, cb) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
-    if (!room.current || room.current.stage !== 'reveal') return cb && cb({ ok: false, error: 'Not ready.' });
+    if (!room.current || room.current.stage !== 'reveal') return cb && cb({ ok: false, error: I18N.t(room.language, 'err_notReady') });
     room.current.stage = 'scores';
     cb && cb({ ok: true });
     broadcastAll(room);
@@ -432,7 +439,7 @@ io.on('connection', (socket) => {
   socket.on('teacher:next', ({ code, teacherToken } = {}, cb) => {
     const { room, error } = requireTeacher(code, teacherToken);
     if (error) return cb && cb({ ok: false, error });
-    if (!room.current || room.current.stage !== 'scores') return cb && cb({ ok: false, error: 'Not ready.' });
+    if (!room.current || room.current.stage !== 'scores') return cb && cb({ ok: false, error: I18N.t(room.language, 'err_notReady') });
     if (room.currentIndex + 1 < room.playOrder.length) {
       room.currentIndex += 1;
       cb && cb({ ok: true });
@@ -457,9 +464,9 @@ io.on('connection', (socket) => {
   // ---- student ----
   socket.on('student:join', ({ code, playerId } = {}, cb) => {
     const room = manager.get(code);
-    if (!room) return cb && cb({ ok: false, error: 'No quiz with that code.' });
+    if (!room) return cb && cb({ ok: false, error: I18N.t(I18N.DEFAULT_LANG, 'err_noQuizWithCode') });
     if (['play', 'podium'].includes(room.phase) && !room.players.has(playerId)) {
-      return cb && cb({ ok: false, error: 'This quiz has already started — ask your teacher for the code of the next one.' });
+      return cb && cb({ ok: false, error: I18N.t(room.language, 'err_quizAlreadyStartedJoin') });
     }
     const id = playerId || newId('p');
     const player = manager.addOrGetPlayer(room, id);
@@ -476,11 +483,11 @@ io.on('connection', (socket) => {
 
   socket.on('student:setProfile', ({ code, playerId, name, avatar } = {}, cb) => {
     const room = manager.get(code);
-    if (!room) return cb && cb({ ok: false, error: 'Quiz not found.' });
+    if (!room) return cb && cb({ ok: false, error: I18N.t(I18N.DEFAULT_LANG, 'err_quizNotFound') });
     const player = room.players.get(playerId);
-    if (!player) return cb && cb({ ok: false, error: 'Rejoin the quiz first.' });
+    if (!player) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_rejoinFirst') });
     const cleanName = String(name || '').trim().slice(0, 24);
-    if (!cleanName) return cb && cb({ ok: false, error: 'Enter a nickname.' });
+    if (!cleanName) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_enterNickname') });
     player.name = cleanName;
     player.avatar = AVATARS.includes(avatar) ? avatar : AVATARS[0];
     cb && cb({ ok: true });
@@ -489,18 +496,18 @@ io.on('connection', (socket) => {
 
   socket.on('student:submitQuestion', ({ code, playerId, question } = {}, cb) => {
     const room = manager.get(code);
-    if (!room) return cb && cb({ ok: false, error: 'Quiz not found.' });
+    if (!room) return cb && cb({ ok: false, error: I18N.t(I18N.DEFAULT_LANG, 'err_quizNotFound') });
     const player = room.players.get(playerId);
-    if (!player || !player.name) return cb && cb({ ok: false, error: 'Join the lobby first.' });
+    if (!player || !player.name) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_joinLobbyFirst') });
     if (room.phase === 'play' || room.phase === 'podium') {
-      return cb && cb({ ok: false, error: 'The quiz has already started.' });
+      return cb && cb({ ok: false, error: I18N.t(room.language, 'err_quizAlreadyStarted') });
     }
-    const { ok, question: clean, error } = sanitizeQuestion(question, room.allowedTypes);
+    const { ok, question: clean, error } = sanitizeQuestion(question, room.allowedTypes, room.language);
     if (!ok) return cb && cb({ ok: false, error });
 
     let entry = player.submittedQuestionId ? getQuestion(room, player.submittedQuestionId) : null;
     if (entry && entry.status === 'approved') {
-      return cb && cb({ ok: false, error: 'Your question was already approved and can no longer be edited.' });
+      return cb && cb({ ok: false, error: I18N.t(room.language, 'err_alreadyApproved') });
     }
     if (entry) {
       Object.assign(entry, clean, { status: 'pending' });
@@ -515,15 +522,15 @@ io.on('connection', (socket) => {
 
   socket.on('student:submitAnswer', ({ code, playerId, value } = {}, cb) => {
     const room = manager.get(code);
-    if (!room) return cb && cb({ ok: false, error: 'Quiz not found.' });
+    if (!room) return cb && cb({ ok: false, error: I18N.t(I18N.DEFAULT_LANG, 'err_quizNotFound') });
     const player = room.players.get(playerId);
-    if (!player) return cb && cb({ ok: false, error: 'Rejoin the quiz first.' });
+    if (!player) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_rejoinFirst') });
     if (room.phase !== 'play' || !room.current || room.current.stage !== 'active') {
-      return cb && cb({ ok: false, error: 'No active question right now.' });
+      return cb && cb({ ok: false, error: I18N.t(room.language, 'err_noActiveQuestion') });
     }
     const q = currentQuestion(room);
-    if (q.authorId === player.id) return cb && cb({ ok: false, error: "You can't answer your own question." });
-    if (room.current.answers.has(player.id)) return cb && cb({ ok: false, error: 'Already answered.' });
+    if (q.authorId === player.id) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_cantAnswerOwn') });
+    if (room.current.answers.has(player.id)) return cb && cb({ ok: false, error: I18N.t(room.language, 'err_alreadyAnswered') });
 
     let rawValue = value;
     if (q.type === 'mc') rawValue = Number.isInteger(value) ? value : parseInt(value, 10);
