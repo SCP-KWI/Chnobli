@@ -3,9 +3,9 @@
 
 const crypto = require('crypto');
 const I18N = require('../public/js/i18n.js');
+const { AVATARS } = require('../public/js/avatars.js');
 
 const QUESTION_TYPES = ['mc', 'tf', 'short', 'guess'];
-const AVATARS = ['🦊', '🦉', '🐙', '🦋', '🐬', '🦄', '🐝', '🐧'];
 // Authors pick their question's time limit from exactly these four stops.
 const DURATION_OPTIONS_SEC = [10, 20, 30, 40];
 const DEFAULT_DURATION_SEC = 20;

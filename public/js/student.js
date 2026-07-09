@@ -1,5 +1,5 @@
 (function () {
-  const { AVATARS, esc } = window.QZ;
+  const { AVATARS, AVATAR_PAGES, esc } = window.QZ;
   const I18N = window.I18N;
   const app = document.getElementById('app');
   const pageTitleEl = document.getElementById('pageTitle');
@@ -135,22 +135,66 @@
   function renderAvatar(v) {
     let picked = v.avatar || AVATARS[0];
     let name = v.name || '';
+    // Land on whichever page already holds the current pick, so a student
+    // revisiting this screen isn't dropped back on page 1.
+    let page = Math.max(0, AVATAR_PAGES.findIndex((p) => p.emojis.includes(picked)));
+
     app.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:16px;flex:1">
         <div style="text-align:center"><span class="badge badge-neutral">${esc(t('codeLabel', { code: v.code }))}</span>
           <div style="font:700 20px 'Source Sans 3';letter-spacing:-.01em;margin-top:8px">${esc(t('makeItYours'))}</div></div>
-        <div class="eyebrow">${esc(t('pickAvatar'))}</div>
-        <div class="avatar-grid">${AVATARS.map((a) => `<button type="button" class="avatar-pick ${a === picked ? 'on' : ''}" data-a="${a}">${a}</button>`).join('')}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="eyebrow" id="avatarCatLabel" style="margin-bottom:0"></div>
+          <div style="display:flex;gap:6px">
+            <button type="button" id="avatarPrev" class="btn btn-secondary" style="width:30px;height:30px;padding:0;border-radius:9px" aria-label="${esc(t('pickAvatar'))}"><span class="mi" style="font-size:18px">chevron_left</span></button>
+            <button type="button" id="avatarNext" class="btn btn-secondary" style="width:30px;height:30px;padding:0;border-radius:9px" aria-label="${esc(t('pickAvatar'))}"><span class="mi" style="font-size:18px">chevron_right</span></button>
+          </div>
+        </div>
+        <div class="avatar-grid" id="avatarGrid" style="touch-action:pan-y"></div>
+        <div id="avatarDots" style="display:flex;justify-content:center;gap:6px"></div>
         <div><div class="eyebrow" style="margin-bottom:8px">${esc(t('nicknameLabel'))}</div>
           <input id="nameInput" value="${esc(name)}" placeholder="${esc(t('nicknamePlaceholder'))}" maxlength="24" style="height:48px;padding:0 14px;font-size:15px;font-weight:500" /></div>
         <div style="flex:1"></div>
         <div id="avatarErr" style="color:var(--bad-ink);font-size:13px;display:none"></div>
         <button class="btn btn-primary btn-block btn-lg" id="enterBtn">${esc(t('enterLobbyBtn'))}<span class="mi" style="font-size:20px">arrow_forward</span></button>
       </div>`;
-    app.querySelectorAll('.avatar-pick').forEach((btn) => btn.addEventListener('click', () => {
-      picked = btn.dataset.a;
-      app.querySelectorAll('.avatar-pick').forEach((b) => b.classList.toggle('on', b.dataset.a === picked));
-    }));
+
+    const grid = app.querySelector('#avatarGrid');
+    const catLabel = app.querySelector('#avatarCatLabel');
+    const dots = app.querySelector('#avatarDots');
+
+    function paint() {
+      const pageDef = AVATAR_PAGES[page];
+      catLabel.textContent = t('avatarCat_' + pageDef.key);
+      grid.innerHTML = pageDef.emojis.map((a) => `<button type="button" class="avatar-pick ${a === picked ? 'on' : ''}" data-a="${a}">${a}</button>`).join('');
+      grid.querySelectorAll('.avatar-pick').forEach((btn) => btn.addEventListener('click', () => {
+        picked = btn.dataset.a;
+        grid.querySelectorAll('.avatar-pick').forEach((b) => b.classList.toggle('on', b.dataset.a === picked));
+      }));
+      dots.innerHTML = AVATAR_PAGES.map((_, i) => `<span style="width:6px;height:6px;border-radius:50%;background:${i === page ? 'var(--accent)' : 'var(--line-strong)'}"></span>`).join('');
+    }
+    function goPage(delta) {
+      page = (page + delta + AVATAR_PAGES.length) % AVATAR_PAGES.length;
+      paint();
+    }
+    paint();
+
+    app.querySelector('#avatarPrev').addEventListener('click', () => goPage(-1));
+    app.querySelector('#avatarNext').addEventListener('click', () => goPage(1));
+
+    // Swipe left/right on the grid to page through, for mobile.
+    let touchX = 0;
+    let touchY = 0;
+    grid.addEventListener('touchstart', (e) => {
+      touchX = e.touches[0].clientX;
+      touchY = e.touches[0].clientY;
+    }, { passive: true });
+    grid.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) goPage(dx < 0 ? 1 : -1);
+    }, { passive: true });
+
     app.querySelector('#enterBtn').addEventListener('click', () => {
       name = app.querySelector('#nameInput').value.trim();
       if (!name) {

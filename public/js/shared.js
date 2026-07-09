@@ -1,6 +1,7 @@
 // Shared helpers used by both the teacher console and the student app.
+// Requires avatars.js to be loaded first (it sets window.Avatars).
 (function (global) {
-  const AVATARS = ['🦊', '🦉', '🐙', '🦋', '🐬', '🦄', '🐝', '🐧'];
+  const { AVATARS, AVATAR_PAGES } = global.Avatars;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
@@ -27,5 +28,5 @@
     return new URLSearchParams(location.search).get(name);
   }
 
-  global.QZ = { AVATARS, esc, confettiHTML, qs };
+  global.QZ = { AVATARS, AVATAR_PAGES, esc, confettiHTML, qs };
 })(window);

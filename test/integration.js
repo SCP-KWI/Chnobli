@@ -11,6 +11,8 @@
 // See test/run.sh for the one-shot version.
 
 const { io } = require('socket.io-client');
+const path = require('path');
+const { AVATAR_PAGES, AVATARS } = require(path.join(__dirname, '..', 'public', 'js', 'avatars.js'));
 
 const PORT = process.env.TEST_PORT || 3987;
 const URL = `http://localhost:${PORT}`;
@@ -71,6 +73,11 @@ async function main() {
     process.exit(2);
   }, 45000);
   watchdog.unref && watchdog.unref();
+
+  // Pure sanity check on the shared avatar catalogue itself (no server needed).
+  check(AVATAR_PAGES.length >= 5, 'the avatar catalogue has at least 5 pages');
+  check(AVATAR_PAGES.every((p) => p.emojis.length === 8), 'every avatar page has exactly 8 emoji');
+  check(new Set(AVATARS).size === AVATARS.length, 'no emoji is repeated across avatar pages');
 
   console.log('Connecting to server on port', PORT, '(start it separately first) ...');
 
@@ -133,7 +140,10 @@ async function main() {
     makeStudent('Inkwell', '🐙'),
     makeStudent('NightOwl', '🦉'),
     makeStudent('Mothwing', '🦋'),
-    makeStudent('Bumble', '🐝'),
+    // Bumble picks an emoji from one of the newer avatar pages (food), to
+    // confirm the server validates against the full 40-emoji catalogue and
+    // not just the original 8.
+    makeStudent('Bumble', '🍕'),
   ];
   for (const s of students) {
     await connected(s.socket);
@@ -145,6 +155,7 @@ async function main() {
   }
 
   await waitUntil(() => teacherState && teacherState.joinedCount === 4, { label: 'teacher sees 4 joined players' });
+  check(teacherState.players.some((p) => p.name === 'Bumble' && p.avatar === '🍕'), 'an avatar from a non-default page is accepted and shown to the teacher');
 
   const questions = [
     { type: 'mc', text: 'Closest planet to the sun?', durationSec: 10, options: ['Mercury', 'Venus', 'Earth', 'Mars'], correctIndex: 0 },
