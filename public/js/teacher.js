@@ -14,6 +14,8 @@
   const socket = io();
   let session = null; // {code, teacherToken}
   let latestView = null;
+  let lastKey = null;
+  let renderCounter = 0;
 
   const savedLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'de';
   let setupDraft = { title: '', types: ['mc', 'tf', 'short', 'guess'], language: savedLang };
@@ -89,8 +91,40 @@
     latestView = view;
     endBtn.style.display = 'inline-flex';
     applyStaticText();
-    render(view);
+    // While a question is live, the server pushes a fresh view every second
+    // (the countdown) and after every answer — rebuilding the whole card
+    // each time replayed its entrance animation, which read as a constant
+    // flicker. As long as we're still on the same question in the same
+    // stage, just patch the numbers in place instead of a full re-render.
+    const key = computeKey(view);
+    if (key === lastKey) {
+      lightUpdate(view);
+    } else {
+      lastKey = key;
+      render(view);
+    }
   });
+
+  function computeKey(view) {
+    if (view.phase === 'play' && view.stage === 'active') return 'active:' + view.qNum;
+    renderCounter++;
+    return 'full:' + renderCounter;
+  }
+
+  function lightUpdate(view) {
+    const ring = stage.querySelector('.ring');
+    const ringInner = stage.querySelector('.ring-inner');
+    if (ringInner) ringInner.textContent = view.timeLeft;
+    if (ring) {
+      const pct = Math.round((100 * view.timeLeft) / view.durationSec);
+      ring.style.background = `conic-gradient(${view.timeLeft <= 5 ? 'var(--warn)' : 'var(--accent)'} ${pct}%, var(--surface-2) 0)`;
+      ring.style.animation = view.timeLeft <= 5 ? 'ringPulse 1s ease-in-out infinite' : 'none';
+    }
+    const answeredText = stage.querySelector('#answeredCountText');
+    if (answeredText) answeredText.textContent = t('answeredCount', { n: view.answered, m: view.expected });
+    const bar = stage.querySelector('.progressbar > div');
+    if (bar) bar.style.width = view.ansPct + '%';
+  }
 
   endBtn.addEventListener('click', () => {
     if (!session) return;
@@ -296,7 +330,7 @@
       <div class="q-text">${esc(view.qText)}</div>
       ${answerArea}
       <div style="display:flex;align-items:center;gap:14px;padding:24px 26px 26px">
-        <span class="chip mono" style="font:600 13px var(--font-mono)"><span class="mi mif" style="font-size:18px;color:var(--accent)">group</span>${esc(t('answeredCount', { n: view.answered, m: view.expected }))}</span>
+        <span class="chip mono" style="font:600 13px var(--font-mono)"><span class="mi mif" style="font-size:18px;color:var(--accent)">group</span><span id="answeredCountText">${esc(t('answeredCount', { n: view.answered, m: view.expected }))}</span></span>
         <div class="progressbar" style="flex:1"><div style="width:${view.ansPct}%"></div></div>
       </div>
     </div></div>`;
